@@ -15,8 +15,6 @@ import { DEFAULT_HASHER } from '../src/lib/poseidon';
 import { Path } from '../src/lib/path';
 import { MtValue } from '../src/lib/mt-value';
 
-jest.mock('@digitalbazaar/http-client', () => ({}));
-
 describe('tests merkelization', () => {
   it('multigraph TestEntriesFromRDF', async () => {
     const dataset = await RDFDataset.fromDocument(JSON.parse(multigraphDoc2));
