@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible"
+        content="IE=edge">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+    <script src="./dist/umd/index.js"></script>
+    <title>Test</title>
+</head>
+
+<body>
+    Test browser
+</body>
+<script>
+    const multigraphDoc = `{
+  "@context":[
+    "https://www.w3.org/2018/credentials/v1",
+    "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld"
+  ],
+  "@type":"VerifiablePresentation",
+  "holder": ["http://example.com/holder1", "http://example.com/holder2"],
+  "verifiableCredential": {
+    "@id": "http://example.com/vc2",
+    "@type":"KYCAgeCredential",
+    "birthday":19960425
+  }
+}`;
+    const {
+        Merkelizer,
+        Path
+    } = IdenMerklizer;
+
+    console.log(IdenMerklizer)
+
+    const run = async () => {
+
+        const mz = await Merkelizer.merkelizeJSONLD(multigraphDoc);
+
+        const path = await Path.fromDocument(null, multigraphDoc, 'verifiableCredential.birthday');
+
+        const val = await mz.rawValue(path);
+        console.assert(val === 19960425);
+    };
+    run().catch(console.error);
+</script>
+
+</html>
