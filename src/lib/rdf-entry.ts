@@ -11,6 +11,8 @@ import { Relationship } from './relationship';
 import { DatasetIdx } from './dataset-idx';
 import { QuadArrKey } from './quad-arr-key';
 
+import { Temporal } from 'temporal-polyfill';
+
 export class RDFEntry {
   constructor(public key: Path, public value: Value, public hasher: Hasher = DEFAULT_HASHER) {
     if (!key.parts.length) {
@@ -46,7 +48,7 @@ export class RDFEntry {
         e.value = v;
         break;
       default:
-        if (v instanceof Date) {
+        if (v instanceof Temporal.Instant) {
           e.value = v;
         } else {
           throw new Error(`error: incorrect value type ${typeof v}`);
@@ -101,11 +103,15 @@ export class RDFEntry {
                 break;
               case XSDNS.DateTime:
                 // e.value.ts = DateTime.fromISO("1958-07-17 00:00:00 +0000")
-                // const dateRegEx = /^\d{4}-\d{2}-\d{2}$/
                 if (isNaN(Date.parse(qoVal))) {
                   throw new Error(`error: error parsing time string ${qoVal}`);
                 }
-                value = new Date(Date.parse(qoVal));
+                const dateRegEx = /^\d{4}-\d{2}-\d{2}$/;
+                if (dateRegEx.test(qoVal)) {
+                  value = Temporal.Instant.from(new Date(qoVal).toISOString());
+                } else {
+                  value = Temporal.Instant.from(qoVal);
+                }
                 break;
               default:
                 value = qoVal;
