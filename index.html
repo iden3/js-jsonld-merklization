@@ -29,7 +29,7 @@
   }
 }`;
     const {
-        Merkelizer,
+        Merklizer,
         Path
     } = IdenMerklizer;
 
@@ -37,7 +37,7 @@
 
     const run = async () => {
 
-        const mz = await Merkelizer.merkelizeJSONLD(multigraphDoc);
+        const mz = await Merklizer.merklizeJSONLD(multigraphDoc);
 
         const path = await Path.fromDocument(null, multigraphDoc, 'verifiableCredential.birthday');
 

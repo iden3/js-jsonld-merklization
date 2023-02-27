@@ -1,4 +1,4 @@
-import { Merkelizer } from './../src/lib/merklizer';
+import { Merklizer } from './../src/lib/merklizer';
 import { MerklizationConstants } from './../src/lib/constants';
 import { RDFEntry } from './../src/lib/rdf-entry';
 import { RDFDataset } from './../src/lib/rdf-dataset';
@@ -366,8 +366,8 @@ describe('tests merkelization', () => {
   });
 
   describe('TestMerklizer_Proof', () => {
-    it('test merkelizer with path as a Path', async () => {
-      const mz = await Merkelizer.merkelizeJSONLD(testDocument);
+    it('test merklizer with path as a Path', async () => {
+      const mz = await Merklizer.merklizeJSONLD(testDocument);
       const path = new Path([
         'https://www.w3.org/2018/credentials#credentialSubject',
         1,
@@ -392,8 +392,8 @@ describe('tests merkelization', () => {
       );
     });
 
-    it('test merkelizer with path as shortcut string', async () => {
-      const mz = await Merkelizer.merkelizeJSONLD(testDocument);
+    it('test merklizer with path as shortcut string', async () => {
+      const mz = await Merklizer.merklizeJSONLD(testDocument);
       const path = await mz.resolveDocPath('credentialSubject.1.birthCountry');
 
       const { proof, value } = await mz.proof(path);
@@ -505,7 +505,7 @@ describe('tests merkelization', () => {
   });
 
   it('TestExistenceProof', async () => {
-    const mz = await Merkelizer.merkelizeJSONLD(doc1);
+    const mz = await Merklizer.merklizeJSONLD(doc1);
     const path = await mz.resolveDocPath('credentialSubject.birthday');
 
     const wantPath = new Path([
@@ -536,7 +536,7 @@ describe('tests merkelization', () => {
   });
 
   it('TestMerklizer_RawValue', async () => {
-    const mz = await Merkelizer.merkelizeJSONLD(multigraphDoc);
+    const mz = await Merklizer.merklizeJSONLD(multigraphDoc);
 
     const path = await Path.fromDocument(null, multigraphDoc, 'verifiableCredential.birthday');
 

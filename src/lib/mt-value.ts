@@ -73,7 +73,7 @@ export class MtValue {
     }
   };
 
-  static async mkValueInt(h: Hasher, v: number): Promise<bigint> {
+  static async mkValueInt(h: Hasher, v: number | bigint): Promise<bigint> {
     if (v >= 0) {
       return BigInt(v);
     }
@@ -97,7 +97,7 @@ export class MtValue {
 
   static mkValueTime = (h: Hasher, v: Date): Promise<bigint> => {
     // convert unixTimeStamp from ms -> ns as in go implementation
-    const unixTimeStamp = v.valueOf() * 10_00_000; // parseInt(`${v.getTime()*10_00_000}`).toFixed(0)
-    return MtValue.mkValueInt(h, unixTimeStamp);
+    const unixTimeStamp = BigInt(v.valueOf()) * BigInt(10_00_000);
+    return Promise.resolve( MtValue.mkValueInt(h, unixTimeStamp));
   };
 }

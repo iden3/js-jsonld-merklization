@@ -9,7 +9,7 @@ import { Path } from './path';
 import { MtValue } from './mt-value';
 import { jsonLdDocLoader } from '../loaders/jsonld-loader';
 
-export class Merkelizer {
+export class Merklizer {
   constructor(
     public readonly srcDoc: string | null = null,
     public readonly mt: Merkletree | null = null,
@@ -95,8 +95,8 @@ export class Merkelizer {
     return obj[idx];
   }
 
-  static async merkelizeJSONLD(docStr: string): Promise<Merkelizer> {
-    const mz = new Merkelizer(docStr);
+  static async merklizeJSONLD(docStr: string): Promise<Merklizer> {
+    const mz = new Merklizer(docStr);
     const doc = JSON.parse(mz.srcDoc);
     const dataset = await RDFDataset.fromDocument(doc);
     const entries = await RDFEntry.fromDataSet(dataset, DEFAULT_HASHER);
