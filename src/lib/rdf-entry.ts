@@ -10,8 +10,7 @@ import { RDFDataset } from './rdf-dataset';
 import { Relationship } from './relationship';
 import { DatasetIdx } from './dataset-idx';
 import { QuadArrKey } from './quad-arr-key';
-
-import { Temporal } from 'temporal-polyfill';
+import { Temporal } from 'temporal-polyfill'
 
 export class RDFEntry {
   constructor(public key: Path, public value: Value, public hasher: Hasher = DEFAULT_HASHER) {
@@ -106,11 +105,11 @@ export class RDFEntry {
                 if (isNaN(Date.parse(qoVal))) {
                   throw new Error(`error: error parsing time string ${qoVal}`);
                 }
-                const dateRegEx = /^\d{4}-\d{2}-\d{2}$/;
-                if (dateRegEx.test(qoVal)) {
-                  value = Temporal.Instant.from(new Date(qoVal).toISOString());
-                } else {
-                  value = Temporal.Instant.from(qoVal);
+                const dateRegEx = /^\d{4}-\d{2}-\d{2}$/
+                if (dateRegEx.test(qoVal)){
+                  value =  Temporal.Instant.from(new Date(qoVal).toISOString())
+                } else{
+                  value =  Temporal.Instant.from(qoVal)
                 }
                 break;
               default:

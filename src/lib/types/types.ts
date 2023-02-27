@@ -1,3 +1,5 @@
+import { Temporal } from 'temporal-polyfill';
+
 export interface Hasher {
   hash: (inp: bigint[]) => Promise<bigint>;
   hashBytes: (b: Uint8Array) => Promise<bigint>;
@@ -21,6 +23,6 @@ export enum XSDNS {
   DateTime = 'http://www.w3.org/2001/XMLSchema#dateTime'
 }
 
-export type Value = boolean | number | Date | string;
+export type Value = boolean | number | Temporal.Instant | string;
 
 export type Parts = Array<string | number>;

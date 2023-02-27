@@ -1,6 +1,6 @@
 {
   "name": "@iden3/js-jsonld-merklization",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "json ld merklization library",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
@@ -58,7 +58,8 @@
     "@iden3/js-merkletree": "v1.0.0-beta.0",
     "jsonld": "8.1.0",
     "jsonld-context-parser": "^2.2.2",
-    "n3": "^1.16.3"
+    "n3": "^1.16.3",
+    "temporal-polyfill": "^0.1.1"
   },
   "browserslist": {
     "production": [

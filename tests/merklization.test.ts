@@ -14,6 +14,8 @@ import { Merkletree, verifyProof, InMemoryDB, str2Bytes } from '@iden3/js-merkle
 import { DEFAULT_HASHER } from '../src/lib/poseidon';
 import { Path } from '../src/lib/path';
 import { MtValue } from '../src/lib/mt-value';
+import path from 'path';
+import { Temporal } from 'temporal-polyfill';
 
 describe('tests merkelization', () => {
   it('multigraph TestEntriesFromRDF', async () => {
@@ -83,7 +85,7 @@ describe('tests merkelization', () => {
           0,
           'http://schema.org/birthDate'
         ]),
-        new Date('1958-07-17T00:00:00.000Z')
+        Temporal.Instant.from('1958-07-17T00:00:00.000Z')
       ),
       new RDFEntry(
         new Path([
@@ -173,7 +175,7 @@ describe('tests merkelization', () => {
           0,
           'https://w3id.org/citizenship#residentSince'
         ]),
-        new Date('2015-01-01T00:00:00.000Z')
+        Temporal.Instant.from('2015-01-01T00:00:00.000Z')
       ),
       new RDFEntry(
         new Path([
@@ -181,7 +183,7 @@ describe('tests merkelization', () => {
           1,
           'http://schema.org/birthDate'
         ]),
-        new Date('1958-07-18T00:00:00.000Z')
+        Temporal.Instant.from('1958-07-18T00:00:00.000Z')
       ),
       new RDFEntry(
         new Path([
@@ -271,7 +273,7 @@ describe('tests merkelization', () => {
           1,
           'https://w3id.org/citizenship#residentSince'
         ]),
-        new Date('2015-01-01T00:00:00.000Z')
+        Temporal.Instant.from('2015-01-01T00:00:00.000Z')
       ),
       new RDFEntry(
         new Path(['http://schema.org/description']),
@@ -297,11 +299,11 @@ describe('tests merkelization', () => {
       ),
       new RDFEntry(
         new Path(['https://www.w3.org/2018/credentials#expirationDate']),
-        new Date('2029-12-03T12:19:52.000Z')
+        Temporal.Instant.from('2029-12-03T12:19:52.000Z')
       ),
       new RDFEntry(
         new Path(['https://www.w3.org/2018/credentials#issuanceDate']),
-        new Date('2019-12-03T12:19:52.000Z')
+        Temporal.Instant.from('2019-12-03T12:19:52.000Z')
       ),
       new RDFEntry(
         new Path(['https://www.w3.org/2018/credentials#issuer']),
@@ -330,7 +332,7 @@ describe('tests merkelization', () => {
       'http://schema.org/birthDate'
     ]);
 
-    const birthDate = new Date('1958-07-18T00:00:00Z');
+    const birthDate = Temporal.Instant.from('1958-07-18T00:00:00Z');
     const entry = new RDFEntry(path, birthDate);
 
     const { k, v } = await entry.getKeyValueMTEntry();
@@ -366,7 +368,7 @@ describe('tests merkelization', () => {
   });
 
   describe('TestMerklizer_Proof', () => {
-    it('test merklizer with path as a Path', async () => {
+    it('test Merklizer with path as a Path', async () => {
       const mz = await Merklizer.merklizeJSONLD(testDocument);
       const path = new Path([
         'https://www.w3.org/2018/credentials#credentialSubject',
@@ -377,14 +379,14 @@ describe('tests merkelization', () => {
 
       const pathMTEntry = await path.mtEntry();
 
-      const valueD = value?.asTime() ?? new Date();
-      expect(valueD).toBeInstanceOf(Date);
+      const valueD = value?.asTime() ?? Temporal.Now.instant();
+      expect(valueD).toBeInstanceOf(Temporal.Instant);
 
       const birthDate = new Date(Date.UTC(1958, 6, 18, 0, 0, 0, 0));
-      expect(birthDate.toUTCString()).toEqual(valueD.toUTCString());
+      expect(birthDate.getTime()).toEqual(valueD.epochMilliseconds);
 
       const valueMTEntry = await MtValue.mkValueMtEntry(DEFAULT_HASHER, valueD);
-      const ok = verifyProof(mz.mt!.root, proof, pathMTEntry, valueMTEntry);
+      const ok = await verifyProof(mz.mt!.root, proof, pathMTEntry, valueMTEntry);
       expect(ok).toBeTruthy();
 
       expect(mz.root().hex()).toEqual(
@@ -392,7 +394,7 @@ describe('tests merkelization', () => {
       );
     });
 
-    it('test merklizer with path as shortcut string', async () => {
+    it('test Merklizer with path as shortcut string', async () => {
       const mz = await Merklizer.merklizeJSONLD(testDocument);
       const path = await mz.resolveDocPath('credentialSubject.1.birthCountry');
 
@@ -494,13 +496,13 @@ describe('tests merkelization', () => {
 
     // time.Time
     const tm = new Date(Date.UTC(2022, 10, 20, 3, 4, 5, 6));
-    const tm2 = new MtValue(tm);
+    const tm2 = new MtValue(Temporal.Instant.from(tm.toISOString()));
     expect(false).toEqual(tm2.isString());
     expect(false).toEqual(tm2.isBool());
     expect(false).toEqual(tm2.isNumber());
     expect(true).toEqual(tm2.isTime());
     const tm3 = tm2.asTime();
-    expect(tm3).toEqual(tm);
+    expect(tm3.toString()).toEqual(tm.toISOString());
     expect(() => tm2.asBool()).toThrowError(MerklizationConstants.ERRORS.MT_VALUE_INCORRECT_TYPE);
   });
 
