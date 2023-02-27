@@ -25,7 +25,7 @@ Here is an example of how to use this library:
 ```javascript
 import { Merkelizer } from '@iden3/js-jsonld-merklization';
 
-const mz = await Merkelizer.merkelizeJSONLD(multigraphDoc);
+const mz = await Merkelizer.merklizeJSONLD(multigraphDoc);
 
 const path = await Path.fromDocument(null, multigraphDoc, 'verifiableCredential.birthday');
 ```
