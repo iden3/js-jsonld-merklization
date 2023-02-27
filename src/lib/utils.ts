@@ -1,6 +1,7 @@
 import { Quad } from 'n3';
 import { MerklizationConstants } from './constants';
 import { Value } from './types/types';
+import { Temporal } from 'temporal-polyfill';
 
 export function getGraphName(q: Quad): string {
   if (!q.graph.value) {
@@ -35,10 +36,12 @@ export const validateValue = (val: Value): void => {
     case 'number':
       return;
     case 'object':
-      if (val instanceof Date) {
+      if (val instanceof Temporal.Instant) {
         return;
       }
   }
 
-  throw new Error(`unexpected value type ${typeof val}, expected boolean | number | Date | string`);
+  throw new Error(
+    `unexpected value type ${typeof val}, expected boolean | number | Temporal.Instant | string`
+  );
 };

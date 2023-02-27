@@ -2,6 +2,7 @@ import { MerklizationConstants } from './constants';
 import { Hasher } from './types/types';
 import { Value } from './types/types';
 import { DEFAULT_HASHER } from './poseidon';
+import { Temporal } from 'temporal-polyfill';
 
 const bytesEncoder = new TextEncoder();
 
@@ -20,14 +21,14 @@ export class MtValue {
   }
 
   isTime(): boolean {
-    return this.value instanceof Date;
+    return this.value instanceof Temporal.Instant;
   }
 
-  asTime(): Date {
+  asTime(): Temporal.Instant {
     if (!this.isTime()) {
       throw MerklizationConstants.ERRORS.MT_VALUE_INCORRECT_TYPE;
     }
-    return this.value as Date;
+    return this.value as Temporal.Instant;
   }
 
   isNumber(): boolean {
@@ -65,7 +66,7 @@ export class MtValue {
       case 'boolean':
         return MtValue.mkValueBool(h, v);
       default: {
-        if (v instanceof Date) {
+        if (v instanceof Temporal.Instant) {
           return MtValue.mkValueTime(h, v);
         }
         throw new Error(`error: unexpected type ${typeof v}`);
@@ -95,9 +96,8 @@ export class MtValue {
     return h.hashBytes(bytesEncoder.encode(v));
   };
 
-  static mkValueTime = (h: Hasher, v: Date): Promise<bigint> => {
+  static mkValueTime = async (h: Hasher, v: Temporal.Instant): Promise<bigint> => {
     // convert unixTimeStamp from ms -> ns as in go implementation
-    const unixTimeStamp = BigInt(v.valueOf()) * BigInt(10_00_000);
-    return Promise.resolve( MtValue.mkValueInt(h, unixTimeStamp));
+    return this.mkValueInt(h, v.epochNanoseconds);
   };
 }
