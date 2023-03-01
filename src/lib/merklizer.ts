@@ -40,8 +40,8 @@ export class Merklizer {
     return { proof };
   }
 
-  mkValue(val: unknown): Value {
-    return val as Value;
+  mkValue(val: Value): MtValue {
+    return new MtValue(val, this.hasher);
   }
 
   async resolveDocPath(path: string): Promise<Path> {
@@ -54,7 +54,7 @@ export class Merklizer {
     return this.mt.root;
   }
 
-  rawValue(path: Path): unknown {
+  rawValue(path: Path): Value {
     let parts = path.parts;
     let obj: unknown = this.compacted;
     const traversedParts: string[] = [];
@@ -81,7 +81,7 @@ export class Merklizer {
       return obj['@value'];
     }
 
-    return obj;
+    return obj as Value;
   }
 
   private rvExtractArrayIdx(obj: unknown, idx: number): unknown {
