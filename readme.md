@@ -23,9 +23,9 @@ Alternatively, you can include it in your project via a CDN:
 Here is an example of how to use this library:
 
 ```javascript
-import { Merkelizer } from '@iden3/js-jsonld-merklization';
+import { Merklizer } from '@iden3/js-jsonld-merklization';
 
-const mz = await Merkelizer.merklizeJSONLD(multigraphDoc);
+const mz = await Merklizer.merklizeJSONLD(multigraphDoc);
 
 const path = await Path.fromDocument(null, multigraphDoc, 'verifiableCredential.birthday');
 ```
