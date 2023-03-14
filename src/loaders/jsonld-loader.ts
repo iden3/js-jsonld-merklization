@@ -29,23 +29,6 @@ import 'cross-fetch/polyfill';
  * @return the node document loader.
  */
 export class JsonLDLoader {
-  httpAgent;
-  httpsAgent = null;
-
-  constructor(
-    public readonly secure = false,
-    public readonly strictSSL = true,
-    public readonly maxRedirects = -1,
-    public headers = {}
-  ) {
-    // if no default user-agent header, copy headers and set one
-    if (!('user-agent' in this.headers)) {
-      this.headers = Object.assign({}, headers, {
-        'user-agent': 'jsonld.js'
-      });
-    }
-  }
-
   async loadDocument(url: string, redirects: string[] = []) {
     const isHttp = url.startsWith('http:');
     const isHttps = url.startsWith('https:');
@@ -56,14 +39,7 @@ export class JsonLDLoader {
         { code: 'loading document failed', url }
       );
     }
-    if (this.secure && !isHttps) {
-      throw new JsonLdError(
-        'URL could not be dereferenced; secure mode is enabled and ' +
-          'the URL\'s scheme is not "https".',
-        'jsonld.InvalidUrl',
-        { code: 'loading document failed', url }
-      );
-    }
+
     // TODO: disable cache until HTTP caching implemented
     // let doc = null; //cache.get(url);
     // if (doc !== null) {
@@ -72,13 +48,7 @@ export class JsonLDLoader {
 
     let alternate = null;
 
-    const { res, body } = await _fetch({
-      url,
-      headers: this.headers,
-      strictSSL: this.strictSSL,
-      httpAgent: this.httpAgent,
-      httpsAgent: this.httpsAgent
-    });
+    const { res, body } = await _fetch({ url });
     const doc = { contextUrl: null, documentUrl: url, document: body || null };
 
     // handle error
@@ -127,7 +97,7 @@ export class JsonLDLoader {
 
     // handle redirect
     if ((alternate || (res.status >= 300 && res.status < 400)) && location) {
-      if (redirects.length === this.maxRedirects) {
+      if (redirects.length === -1) {
         throw new JsonLdError(
           'URL could not be dereferenced; there were too many redirects.',
           'jsonld.TooManyRedirects',
@@ -172,30 +142,9 @@ export class JsonLDLoader {
   }
 }
 
-async function _fetch({ url, headers, strictSSL, httpAgent, httpsAgent }) {
+async function _fetch({ url }) {
   try {
-    const options: {
-      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-      headers: any;
-      redirect: RequestRedirect;
-      throwHttpErrors: boolean;
-      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-      agent?: any;
-    } = {
-      headers: { ...headers, 'Accept-Encoding': 'gzip,deflate,compress' },
-      redirect: 'manual',
-      // ky specific to avoid redirects throwing
-      throwHttpErrors: false
-    };
-    const isHttps = url.startsWith('https:');
-    if (isHttps) {
-      options.agent = httpsAgent || new https.Agent({ rejectUnauthorized: strictSSL });
-    } else {
-      if (httpAgent) {
-        options.agent = httpAgent;
-      }
-    }
-    const res = await fetch(url, options);
+    const res = await fetch(url);
     if (res.status >= 300 && res.status < 400) {
       return { res, body: null };
     }
