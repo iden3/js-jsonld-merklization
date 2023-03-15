@@ -94,12 +94,27 @@ export class Merklizer {
     }
     return obj[idx];
   }
+  
 
-  static async merklizeJSONLD(docStr: string): Promise<Merklizer> {
-    const mz = new Merklizer(docStr);
+  static async merklizeJSONLD(docStr: string, options: {
+      mt: Merkletree | null;
+      hasher: Hasher;
+      entries: Map<string, RDFEntry>;
+      compacted: NodeObject | null;
+    } = {
+      mt: null,
+      hasher: DEFAULT_HASHER,
+      entries: new Map(),
+      compacted: null
+    }): Promise<Merklizer> {
+    const mz = new Merklizer(docStr, 
+      options.mt, 
+      options.hasher, 
+      options.entries, 
+      options.compacted);
     const doc = JSON.parse(mz.srcDoc);
     const dataset = await RDFDataset.fromDocument(doc);
-    const entries = await RDFEntry.fromDataSet(dataset, DEFAULT_HASHER);
+    const entries = await RDFEntry.fromDataSet(dataset, mz.hasher);
 
     for (const e of entries) {
       const k = await e.getKeyMtEntry();
