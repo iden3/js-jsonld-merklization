@@ -79,6 +79,52 @@ export class Path {
     }
   }
 
+  async typeFromContext(ctxStr: string, path: string): Promise<string> {
+    const ctxObj = JSON.parse(ctxStr);
+
+    const ctxParser = new ContextParser({ documentLoader });
+    let parsedCtx = await ctxParser.parse(ctxObj['@context']);
+
+    const parts = path.split('.');
+
+    for (const i in parts) {
+      const p = parts[i];
+
+      if (!parsedCtx) {
+        throw MerklizationConstants.ERRORS.PARSED_CONTEXT_IS_NULL;
+      }
+      const m = parsedCtx.getContextRaw()[p];
+      if (typeof m !== 'object') {
+        throw MerklizationConstants.ERRORS.TERM_IS_NOT_DEFINED;
+      }
+
+      const id = m['@id'];
+      if (!id) {
+        throw MerklizationConstants.ERRORS.NO_ID_ATTR;
+      }
+
+      const nextCtx = m['@context'];
+      if (nextCtx) {
+        parsedCtx = await ctxParser.parse(nextCtx);
+      }
+      this.parts.push(id);
+    }
+
+    return Path.getTypeMapping(parsedCtx, parts[parts.length - 1]);
+  }
+  static getTypeMapping(ctx: JsonLdContextNormalized, prop: string): string {
+    let rval = '';
+    const defaultT = ctx.getContextRaw()['@type'];
+    if (defaultT) {
+      rval = defaultT as string;
+    }
+    const propDef = ctx.getContextRaw()[prop];
+    if (propDef && propDef['@type']) {
+      rval = propDef['@type'] as string;
+    }
+    return rval;
+  }
+
   static newPath = (parts: Parts): Path => {
     const p = new Path();
     p.append(parts);
@@ -227,5 +273,10 @@ export class Path {
 
     const p = await Path.pathFromDocument(ldCTX, doc, pathParts, false);
     return new Path(p);
+  }
+
+  static async newTypeFromContext(contextStr: string, path: string): Promise<string> {
+    const p = new Path();
+    return await p.typeFromContext(contextStr, path);
   }
 }

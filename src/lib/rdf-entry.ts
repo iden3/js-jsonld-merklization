@@ -2,15 +2,15 @@ import { Quad } from 'n3';
 /* eslint-disable no-case-declarations */
 import { MerklizationConstants } from './constants';
 import { Path } from './path';
-import { Hasher, NodeType, Value, XSDNS } from './types/types';
+import { Hasher, NodeType, Value } from './types/types';
 import { MtValue } from './mt-value';
 import { DEFAULT_HASHER } from './poseidon';
-import { validateValue } from './utils';
+import { convertStringToXsdValue, validateValue } from './utils';
 import { RDFDataset } from './rdf-dataset';
 import { Relationship } from './relationship';
 import { DatasetIdx } from './dataset-idx';
 import { QuadArrKey } from './quad-arr-key';
-import { Temporal } from 'temporal-polyfill'
+import { Temporal } from 'temporal-polyfill';
 
 export class RDFEntry {
   constructor(public key: Path, public value: Value, public hasher: Hasher = DEFAULT_HASHER) {
@@ -80,41 +80,7 @@ export class RDFEntry {
         switch (qo) {
           case NodeType.Literal:
             const dataType = q?.object?.datatype?.value;
-            switch (dataType) {
-              case XSDNS.Boolean:
-                switch (qoVal) {
-                  case 'false':
-                    value = false;
-                    break;
-                  case 'true':
-                    value = true;
-                    break;
-                  default:
-                    throw new Error('incorrect boolean value');
-                }
-                break;
-              case XSDNS.Integer:
-              case XSDNS.NonNegativeInteger:
-              case XSDNS.NonPositiveInteger:
-              case XSDNS.NegativeInteger:
-              case XSDNS.PositiveInteger:
-                value = parseInt(qoVal);
-                break;
-              case XSDNS.DateTime:
-                // e.value.ts = DateTime.fromISO("1958-07-17 00:00:00 +0000")
-                if (isNaN(Date.parse(qoVal))) {
-                  throw new Error(`error: error parsing time string ${qoVal}`);
-                }
-                const dateRegEx = /^\d{4}-\d{2}-\d{2}$/
-                if (dateRegEx.test(qoVal)){
-                  value =  Temporal.Instant.from(new Date(qoVal).toISOString())
-                } else{
-                  value =  Temporal.Instant.from(qoVal)
-                }
-                break;
-              default:
-                value = qoVal;
-            }
+            value = convertStringToXsdValue(dataType, qoVal);
             break;
           case NodeType.IRI:
             if (!qo) {
