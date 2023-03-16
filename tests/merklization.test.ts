@@ -4,7 +4,7 @@ import { RDFEntry } from './../src/lib/rdf-entry';
 import { RDFDataset } from './../src/lib/rdf-dataset';
 import {
   credentials_v1,
-  credential_v2,
+  kycschema_jsonld,
   doc1,
   multigraphDoc,
   multigraphDoc2,
@@ -455,7 +455,7 @@ describe('tests merkelization', () => {
   it('TestFieldPathFromContext', async () => {
     const typ = 'KYCAgeCredential';
     const fieldPath = 'birthday';
-    const result = await Path.getContextPathKey(credential_v2, typ, fieldPath);
+    const result = await Path.getContextPathKey(kycschema_jsonld, typ, fieldPath);
     const want = new Path([
       'https://github.com/iden3/claim-schema-vocab/blob/main/credentials/kyc.md#birthday'
     ]);
@@ -544,5 +544,135 @@ describe('tests merkelization', () => {
 
     const val = await mz.rawValue(path);
     expect(val).toEqual(19960425);
+  });
+
+  it('TestTypeFromContext', async () => {
+    const input = 'KYCAgeCredential.birthday';
+    const typ = await Path.newTypeFromContext(kycschema_jsonld, input);
+    expect(typ).toEqual('http://www.w3.org/2001/XMLSchema#integer');
+  });
+
+  it('TestHashValue', async () => {
+    const testCases = [
+      {
+        name: 'xsd:integer',
+        pathToField: 'KYCEmployee.documentType',
+        datatype: 'http://www.w3.org/2001/XMLSchema#integer',
+        value: 1,
+        wantHash: '1'
+      },
+      {
+        name: 'xsd:boolean true',
+        pathToField: 'KYCEmployee.ZKPexperiance',
+        datatype: 'http://www.w3.org/2001/XMLSchema#boolean',
+        value: true,
+        wantHash: '18586133768512220936620570745912940619677854269274689475585506675881198879027'
+      },
+      {
+        name: 'xsd:boolean false',
+        pathToField: 'KYCEmployee.ZKPexperiance',
+        datatype: 'http://www.w3.org/2001/XMLSchema#boolean',
+        value: false,
+        wantHash: '19014214495641488759237505126948346942972912379615652741039992445865937985820'
+      },
+      {
+        name: 'xsd:boolean 1',
+        pathToField: 'KYCEmployee.ZKPexperiance',
+        datatype: 'http://www.w3.org/2001/XMLSchema#boolean',
+        value: '1',
+        wantHash: '18586133768512220936620570745912940619677854269274689475585506675881198879027'
+      },
+      {
+        name: 'xsd:boolean 0',
+        pathToField: 'KYCEmployee.ZKPexperiance',
+        datatype: 'http://www.w3.org/2001/XMLSchema#boolean',
+        value: '0',
+        wantHash: '19014214495641488759237505126948346942972912379615652741039992445865937985820'
+      },
+      {
+        name: 'xsd:dateTime > January 1st, 1970 RFC3339Nano',
+        pathToField: 'KYCEmployee.hireDate',
+        datatype: 'http://www.w3.org/2001/XMLSchema#dateTime',
+        value: '2019-01-01T00:00:00Z',
+        wantHash: '1546300800000000000'
+      },
+      {
+        name: 'xsd:dateTime < January 1st, 1970 RFC3339Nano',
+        pathToField: 'KYCEmployee.hireDate',
+        datatype: 'http://www.w3.org/2001/XMLSchema#dateTime',
+        value: '1960-02-20T11:20:33Z',
+        wantHash: '21888242871839275222246405745257275088548364400416034343697892928208808495617'
+      },
+      {
+        name: 'xsd:dateTime YYYY-MM-DD go format (2006-01-02)',
+        pathToField: 'KYCEmployee.hireDate',
+        datatype: 'http://www.w3.org/2001/XMLSchema#dateTime',
+        value: '1997-04-16',
+        wantHash: '861148800000000000'
+      },
+      {
+        name: 'xsd:string',
+        pathToField: 'KYCEmployee.position',
+        datatype: 'http://www.w3.org/2001/XMLSchema#string',
+        value: 'SSI Consultant',
+        wantHash: '957410455271905675920624030785024750144198809104092676617070098470852489834'
+      },
+      {
+        name: 'xsd:double should be processed as string',
+        pathToField: 'KYCEmployee.salary',
+        datatype: 'http://www.w3.org/2001/XMLSchema#double',
+        value: 100000.01,
+        wantHash: '15818843047081382538159097715644330692873067854222195813394816036608348381949'
+      },
+      {
+        name: 'xsd:double in our case will be processed as string, since rules are not defined',
+        pathToField: 'KYCEmployee.salary',
+        datatype: 'http://www.w3.org/2001/XMLSchema#double',
+        value: '100000.01',
+        wantHash: '15818843047081382538159097715644330692873067854222195813394816036608348381949'
+      }
+    ];
+
+    for (const tc of testCases) {
+      const result = await Merklizer.hashValue(tc.datatype, tc.value);
+      expect(result.toString()).toEqual(tc.wantHash.toString());
+    }
+  });
+
+  it('TestHashValueError', async () => {
+    const testCases = [
+      {
+        name: 'xsd:boolean invalid value',
+        pathToField: 'KYCEmployee.ZKPexperiance',
+        datatype: 'http://www.w3.org/2001/XMLSchema#boolean',
+        value: 'True',
+        wantErr: 'incorrect boolean value'
+      },
+      {
+        name: 'xsd:integer invalid value',
+        pathToField: 'KYCEmployee.documentType',
+        datatype: 'http://www.w3.org/2001/XMLSchema#integer',
+        value: 'one',
+        wantErr: 'incorrect integer value'
+      },
+      {
+        name: 'xsd:dateTime invalid format MM-DD-YYYY go format (01-02-2006)',
+        pathToField: 'KYCEmployee.hireDate',
+        datatype: 'http://www.w3.org/2001/XMLSchema#dateTime',
+        value: '01-01-2019',
+        wantErr: "Cannot parse dateTime '01-01-2019"
+      },
+      {
+        name: 'unknown datatype',
+        pathToField: 'KYCEmployee.documentType',
+        datatype: 'http://www.w3.org/2001/XMLSchema#integer',
+        value: { some_prop: 'some_value' },
+        wantErr: 'unsupported type'
+      }
+    ];
+
+    for (const tc of testCases) {
+      await expect(Merklizer.hashValue(tc.datatype, tc.value)).rejects.toThrow(tc.wantErr);
+    }
   });
 });

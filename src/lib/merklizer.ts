@@ -8,6 +8,7 @@ import { RDFEntry } from './rdf-entry';
 import { Path } from './path';
 import { MtValue } from './mt-value';
 import { jsonLdDocLoader } from '../loaders/jsonld-loader';
+import { convertAnyToString, convertStringToXsdValue } from './utils';
 
 export class Merklizer {
   constructor(
@@ -115,5 +116,20 @@ export class Merklizer {
     );
 
     return mz;
+  }
+
+  static async hashValue(dataType: string, value: unknown): Promise<bigint> {
+    return this.hashValueWithHasher(DEFAULT_HASHER, dataType, value);
+  }
+  private static async hashValueWithHasher(
+    h: Hasher,
+    dataType: string,
+    value: unknown
+  ): Promise<bigint> {
+    const valueStr = convertAnyToString(value);
+
+    const xsdValue = convertStringToXsdValue(dataType, valueStr);
+
+    return await MtValue.mkValueMtEntry(h, xsdValue);
   }
 }
