@@ -96,11 +96,17 @@ export class Merklizer {
     return obj[idx];
   }
 
-  static async merklizeJSONLD(docStr: string): Promise<Merklizer> {
-    const mz = new Merklizer(docStr);
+  static async merklizeJSONLD(
+    docStr: string,
+    opts?: {
+      hasher: Hasher;
+    }
+  ): Promise<Merklizer> {
+    const hasher = opts?.hasher ?? DEFAULT_HASHER;
+    const mz = new Merklizer(docStr, null, hasher);
     const doc = JSON.parse(mz.srcDoc);
     const dataset = await RDFDataset.fromDocument(doc);
-    const entries = await RDFEntry.fromDataSet(dataset, DEFAULT_HASHER);
+    const entries = await RDFEntry.fromDataSet(dataset, hasher);
 
     for (const e of entries) {
       const k = await e.getKeyMtEntry();
@@ -121,6 +127,7 @@ export class Merklizer {
   static async hashValue(dataType: string, value: unknown): Promise<bigint> {
     return this.hashValueWithHasher(DEFAULT_HASHER, dataType, value);
   }
+
   private static async hashValueWithHasher(
     h: Hasher,
     dataType: string,
