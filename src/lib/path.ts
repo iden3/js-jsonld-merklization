@@ -112,7 +112,8 @@ export class Path {
 
     return Path.getTypeMapping(parsedCtx, parts[parts.length - 1]);
   }
-  static getTypeMapping(ctx: JsonLdContextNormalized, prop: string): string {
+
+  private static getTypeMapping(ctx: JsonLdContextNormalized, prop: string): string {
     let rval = '';
     const defaultT = ctx.getContextRaw()['@type'];
     if (defaultT) {
