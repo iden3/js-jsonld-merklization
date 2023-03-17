@@ -24,7 +24,7 @@ export class Relationship {
   }
 
   path(dsIdx: DatasetIdx, ds: RDFDataset, idx: number): Path {
-    const k = new Path();
+    const k = new Path([], this.hasher);
     if (typeof idx === 'number') {
       k.append([idx]);
     }

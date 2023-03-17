@@ -14,8 +14,8 @@ import { Merkletree, verifyProof, InMemoryDB, str2Bytes } from '@iden3/js-merkle
 import { DEFAULT_HASHER } from '../src/lib/poseidon';
 import { Path } from '../src/lib/path';
 import { MtValue } from '../src/lib/mt-value';
-import path from 'path';
 import { Temporal } from 'temporal-polyfill';
+import { TestHasher } from './hasher';
 
 describe('tests merkelization', () => {
   it('multigraph TestEntriesFromRDF', async () => {
@@ -339,7 +339,7 @@ describe('tests merkelization', () => {
 
     const p = await mt.generateProof(k, undefined);
 
-    const ok = await verifyProof(mt.root, p.proof, k, v);
+    const ok = await verifyProof(await mt.root(), p.proof, k, v);
 
     expect(ok).toBe(true);
   });
@@ -362,7 +362,7 @@ describe('tests merkelization', () => {
 
     const p = await mt.generateProof(k, undefined);
 
-    const ok = await verifyProof(mt.root, p.proof, k, v);
+    const ok = await verifyProof(await mt.root(), p.proof, k, v);
 
     expect(ok).toBe(true);
   });
@@ -386,10 +386,10 @@ describe('tests merkelization', () => {
       expect(birthDate.getTime()).toEqual(valueD.epochMilliseconds);
 
       const valueMTEntry = await MtValue.mkValueMtEntry(DEFAULT_HASHER, valueD);
-      const ok = await verifyProof(mz.mt!.root, proof, pathMTEntry, valueMTEntry);
+      const ok = await verifyProof(await mz.mt!.root(), proof, pathMTEntry, valueMTEntry);
       expect(ok).toBeTruthy();
 
-      expect(mz.root().hex()).toEqual(
+      expect((await mz.root()).hex()).toEqual(
         'd001de1d1b74d3b24b394566511da50df18532264c473845ea51e915a588b02a'
       );
     });
@@ -407,10 +407,10 @@ describe('tests merkelization', () => {
       expect(valueStr).toEqual('Bahamas');
       expect(valueStr).toBeDefined();
       const valueMTEntry = await MtValue.mkValueMtEntry(DEFAULT_HASHER, valueStr);
-      const ok = verifyProof(mz.root(), proof, pathMTEntry, valueMTEntry);
+      const ok = verifyProof(await mz.root(), proof, pathMTEntry, valueMTEntry);
       expect(ok).toBeTruthy();
 
-      expect(mz.root().hex()).toEqual(
+      expect((await mz.root()).hex()).toEqual(
         'd001de1d1b74d3b24b394566511da50df18532264c473845ea51e915a588b02a'
       );
     });
@@ -674,5 +674,41 @@ describe('tests merkelization', () => {
     for (const tc of testCases) {
       await expect(Merklizer.hashValue(tc.datatype, tc.value)).rejects.toThrow(tc.wantErr);
     }
+  });
+
+  it('TestHashValueWithCustomHasher', async () => {
+    const testPresentationDoc = `
+    {
+      "id": "uuid:presentation:12312",
+      "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "https://raw.githubusercontent.com/demonsh/schema/main/jsonld/presentation.json-ld#Presentation"
+      ],
+      "type": [
+        "VerifiableCredential"
+      ],
+      "expirationDate": "2024-03-08T22:02:16Z",
+      "issuanceDate": "2023-03-08T22:02:16Z",
+      "issuer": "did:pkh:eip155:1:0x1e903ddDFf29f13fC62F3c78c5b5622a3b14752c",
+      "credentialSubject": {
+        "id": "did:pkh:eip155:1:0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+        "score": 64,
+        "type": "Presentation"
+      }
+    }`;
+
+    const mz = await Merklizer.merklizeJSONLD(testPresentationDoc, { hasher: new TestHasher() });
+
+    const p = await mz.resolveDocPath('credentialSubject');
+
+    const { proof, value } = await mz.proof(p);
+
+    expect(proof.existence).toEqual(true);
+
+    const value1 = await value?.mtEntry();
+    expect(value1).not.toBeNull();
+    expect(value1?.toString()).toEqual(
+      '6297999125319810690293316740165599291730656617454026745496759658030130583296'
+    );
   });
 });
