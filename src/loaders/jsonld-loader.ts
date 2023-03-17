@@ -1,5 +1,4 @@
 import { RemoteDocument, Url } from 'jsonld/jsonld-spec';
-import https from 'https';
 import http from 'http';
 import { parseLinkHeader } from 'jsonld/lib/util';
 import { LINK_HEADER_CONTEXT } from 'jsonld/lib/constants';
