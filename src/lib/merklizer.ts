@@ -51,8 +51,8 @@ export class Merklizer {
     return realPath;
   }
 
-  root(): Hash {
-    return this.mt.root;
+  async root(): Promise<Hash> {
+    return this.mt.root();
   }
 
   rawValue(path: Path): Value {
