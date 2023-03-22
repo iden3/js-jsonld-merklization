@@ -51,6 +51,23 @@ export class Merklizer {
     return realPath;
   }
 
+  private async entry(path: Path): Promise<RDFEntry> {
+    const key = await path.mtEntry();
+    const e = this.entries.get(key.toString());
+    if (!e) {
+      throw new Error('entry not found');
+    }
+
+    return e;
+  }
+
+  // JSONLDType returns the JSON-LD type of the given path. If there is no literal
+  // by this path, it returns an error.
+  async jsonLDType(path: Path): Promise<string> {
+    const entry = await this.entry(path);
+    return entry.dataType;
+  }
+
   async root(): Promise<Hash> {
     return this.mt.root();
   }

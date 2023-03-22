@@ -13,7 +13,12 @@ import { QuadArrKey } from './quad-arr-key';
 import { Temporal } from 'temporal-polyfill';
 
 export class RDFEntry {
-  constructor(public key: Path, public value: Value, public hasher: Hasher = DEFAULT_HASHER) {
+  constructor(
+    public key: Path,
+    public value: Value,
+    public dataType: string = '',
+    public hasher: Hasher = DEFAULT_HASHER
+  ) {
     if (!key.parts.length) {
       throw new Error('key length is zero');
     }
@@ -70,6 +75,7 @@ export class RDFEntry {
       const counts = QuadArrKey.countEntries(quads);
       const seenCount = new Map<string, number>();
       for (let quadIdx = 0; quadIdx < quads.length; quadIdx++) {
+        let dataType = '';
         const q = quads[quadIdx];
         const quadGraphIdx = new DatasetIdx(graphName, quadIdx);
         const qKey = new QuadArrKey(q);
@@ -79,8 +85,9 @@ export class RDFEntry {
 
         switch (qo) {
           case NodeType.Literal:
-            const dataType = q?.object?.datatype?.value;
+            dataType = q?.object?.datatype?.value;
             value = convertStringToXsdValue(dataType, qoVal);
+
             break;
           case NodeType.IRI:
             if (!qo) {
@@ -120,7 +127,7 @@ export class RDFEntry {
         }
 
         const path = rs.path(quadGraphIdx, ds, idx);
-        const e = new RDFEntry(path, value, hasher);
+        const e = new RDFEntry(path, value, dataType, hasher);
         entries.push(e);
       }
     };
