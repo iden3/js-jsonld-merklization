@@ -1,6 +1,6 @@
 import { Quad } from 'n3';
 import { MerklizationConstants } from './constants';
-import { Value, XSDNS } from './types/types';
+import { canonicalDouble, isDouble, Value, XSDNS } from './types/types';
 import { Temporal } from 'temporal-polyfill';
 
 export function getGraphName(q: Quad): string {
@@ -69,7 +69,7 @@ export const convertStringToXsdValue = (dataType: string, valueStr: string): Val
     case XSDNS.NegativeInteger:
     case XSDNS.PositiveInteger:
       value = parseInt(valueStr);
-      if (isNaN(value) || value.toString() !== valueStr){
+      if (isNaN(value) || value.toString() !== valueStr) {
         throw new Error('incorrect integer value');
       }
       break;
@@ -85,18 +85,40 @@ export const convertStringToXsdValue = (dataType: string, valueStr: string): Val
       }
       break;
     }
+    // this is for v2
+    // case XSDNS.Double:
+    //     value = canonicalDouble(parseFloat(valueStr));
+
     default:
       value = valueStr;
   }
   return value;
 };
 
-export const convertAnyToString = (v: unknown): string => {
+export const convertAnyToString = (v: unknown, datatype:string): string => {
+ 
+  if (datatype === XSDNS.Double){
+    switch (typeof v) {
+      case 'string':
+          return canonicalDouble(parseFloat(v));
+      case 'number': {
+          return canonicalDouble(v);
+      }
+      default:
+        throw new Error('unsupported value type for http://www.w3.org/2001/XMLSchema#double' );
+    }
+  }
+
   switch (typeof v) {
     case 'string':
-    case 'number':
     case 'boolean':
       return `${v}`;
+    case 'number': {
+      if (isDouble(v)) {
+        return canonicalDouble(v);
+      }
+      return `${v}`;
+    }
     default:
       throw new Error('unsupported type');
   }

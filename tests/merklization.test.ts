@@ -8,7 +8,9 @@ import {
   doc1,
   multigraphDoc,
   multigraphDoc2,
-  testDocument
+  testDocument,
+  docWithDouble,
+  vp,
 } from './data';
 import { Merkletree, verifyProof, InMemoryDB, str2Bytes } from '@iden3/js-merkletree';
 import { DEFAULT_HASHER } from '../src/lib/poseidon';
@@ -16,6 +18,8 @@ import { Path } from '../src/lib/path';
 import { MtValue } from '../src/lib/mt-value';
 import { Temporal } from 'temporal-polyfill';
 import { TestHasher } from './hasher';
+import { poseidon } from '@iden3/js-crypto';
+import { TextEncoder } from 'util';
 
 describe('tests merkelization', () => {
   it('multigraph TestEntriesFromRDF', async () => {
@@ -596,7 +600,7 @@ describe('tests merkelization', () => {
     expect(typ).toEqual('http://www.w3.org/2001/XMLSchema#integer');
   });
 
-  it('TestHashValue', async () => {
+  it('TestHashValueFromDocument', async () => {
     const testCases = [
       {
         name: 'xsd:integer',
@@ -666,14 +670,14 @@ describe('tests merkelization', () => {
         pathToField: 'KYCEmployee.salary',
         datatype: 'http://www.w3.org/2001/XMLSchema#double',
         value: 100000.01,
-        wantHash: '15818843047081382538159097715644330692873067854222195813394816036608348381949'
+        wantHash: '7858939477831965477428998013961435925262790627337131132863073454519451718017'
       },
       {
         name: 'xsd:double in our case will be processed as string, since rules are not defined',
         pathToField: 'KYCEmployee.salary',
         datatype: 'http://www.w3.org/2001/XMLSchema#double',
         value: '100000.01',
-        wantHash: '15818843047081382538159097715644330692873067854222195813394816036608348381949'
+        wantHash: '7858939477831965477428998013961435925262790627337131132863073454519451718017'
       },
       {
         name: 'big float64 should be correctly parsed as integer',
@@ -685,11 +689,116 @@ describe('tests merkelization', () => {
     ];
 
     for (const tc of testCases) {
+      const typ = await Path.newTypeFromContext(kycschema_jsonld, tc.pathToField);
+      expect(typ).toEqual(tc.datatype);
+
       const result = await Merklizer.hashValue(tc.datatype, tc.value);
       expect(result.toString()).toEqual(tc.wantHash.toString());
     }
   });
 
+  it('TestHashValue', async () => {
+    const testCases = [
+      {
+        name:     "xsd:integer",
+        datatype: "http://www.w3.org/2001/XMLSchema#integer",
+        value:    1,
+        wantHash: "1",
+      },
+      {
+        name:     "xsd:boolean true",
+        datatype: "http://www.w3.org/2001/XMLSchema#boolean",
+        value:    true,
+        wantHash: "18586133768512220936620570745912940619677854269274689475585506675881198879027",
+      },
+      {
+        name:     "xsd:boolean false",
+        datatype: "http://www.w3.org/2001/XMLSchema#boolean",
+        value:    false,
+        wantHash: "19014214495641488759237505126948346942972912379615652741039992445865937985820",
+      },
+      {
+        name:     "xsd:boolean 1",
+        datatype: "http://www.w3.org/2001/XMLSchema#boolean",
+        value:    "1",
+        wantHash: "18586133768512220936620570745912940619677854269274689475585506675881198879027",
+      },
+      {
+        name:     "xsd:boolean 0",
+        datatype: "http://www.w3.org/2001/XMLSchema#boolean",
+        value:    "0",
+        wantHash: "19014214495641488759237505126948346942972912379615652741039992445865937985820",
+      },
+      {
+        name:     "xsd:dateTime > January 1st, 1970 RFC3339Nano",
+        datatype: "http://www.w3.org/2001/XMLSchema#dateTime",
+        value:    "2019-01-01T00:00:00Z",
+        wantHash: "1546300800000000000",
+      },
+      {
+        name:     "xsd:dateTime < January 1st, 1970 RFC3339Nano",
+        datatype: "http://www.w3.org/2001/XMLSchema#dateTime",
+        value:    "1960-02-20T11:20:33Z",
+        wantHash: "21888242871839275222246405745257275088548364400416034343697892928208808495617",
+      },
+      {
+        name:     "xsd:dateTime YYYY-MM-DD go format (2006-01-02)",
+        datatype: "http://www.w3.org/2001/XMLSchema#dateTime",
+        value:    "1997-04-16",
+        wantHash: "861148800000000000",
+      },
+      {
+        name:     "xsd:string",
+        datatype: "http://www.w3.org/2001/XMLSchema#string",
+        value:    "SSI Consultant",
+        wantHash: "957410455271905675920624030785024750144198809104092676617070098470852489834",
+      },
+      {
+        name:     "xsd:double should be processed as string",
+        datatype: "http://www.w3.org/2001/XMLSchema#double",
+        value:    100000.01,
+        wantHash: "7858939477831965477428998013961435925262790627337131132863073454519451718017",
+      },
+      {
+        name:     "xsd:double in our case will be processed as string, since rules are not defined",
+        datatype: "http://www.w3.org/2001/XMLSchema#double",
+        value:    "100000.01",
+        wantHash: "7858939477831965477428998013961435925262790627337131132863073454519451718017",
+      },
+      {
+        name:     "xsd:integer should be correctly parsed as integer",
+        datatype: "http://www.w3.org/2001/XMLSchema#integer",
+        value:     19960424,
+        wantHash: "19960424",
+      },
+      {
+        name:     "number with double xsd type should be correctly parsed as string",
+        datatype: "http://www.w3.org/2001/XMLSchema#double",
+        value:     19960424,
+        // hash of "1.9960424E7"
+        wantHash: "14659279547748882579324236944917252187779632081828519649786308744097131655268",
+      },
+      {
+        name:     "number with double xsd type should be correctly parsed as string",
+        datatype: "http://www.w3.org/2001/XMLSchema#double",
+        value:    19960424,
+        wantHash: strHash("1.9960424E7"),
+      },
+   
+      {
+        name:     "near to max int64 that may be hashed",
+        datatype: "http://www.w3.org/2001/XMLSchema#double",
+        value:    1234567890123456,
+        wantHash: strHash("1.234567890123456E15"),
+      },
+    ];
+
+    for (const tc of testCases) {
+      const result = await Merklizer.hashValue(tc.datatype, tc.value);
+      expect(result.toString()).toEqual(tc.wantHash.toString());
+    }
+  });
+ 
   it('TestHashValueError', async () => {
     const testCases = [
       {
@@ -829,4 +938,44 @@ describe('tests merkelization', () => {
     const datatype = await mz.jsonLDType(path);
     expect('').toEqual(datatype);
   });
+
+  it('roots', async () => {
+    const testCases = [
+      {
+        name:     "testDocument",
+        doc:      testDocument,
+        wantRoot: "19309047812100087948241250053335720576191969395309912987389452441269932261840",
+      },
+      {
+        name:     "doc1",
+        doc:      doc1,
+        wantRoot: "14254126130605812747518773069191924472136034086074656038330159471066163388520",
+      },
+      {
+        name:     "multigraphDoc2",
+        doc:      multigraphDoc2,
+        wantRoot: "11252837464697009054213269776498742372491493851016505396927630745348533726396",
+      },
+      {
+        name:     "vp",
+        doc:      vp,
+        wantRoot: "438107724194342316220762948074408676879297288866380839121721382436955105096",
+      },
+      {
+        name:     "docWithFloat",
+        doc:      docWithDouble,
+        wantRoot: "16807151140873243281836480228059250043791482248223749610516824774207131149216",
+      },
+    ];
+
+    for (const tc of testCases) {
+      const result = await Merklizer.merklizeJSONLD(tc.doc);
+      const root = await result.root();
+      expect(root.bigInt().toString()).toEqual(tc.wantRoot.toString());
+    }
+  });
 });
+
+function strHash(str:string): string {
+  return poseidon.hashBytes(new TextEncoder().encode(str)).toString()
+ }
