@@ -52,7 +52,8 @@ describe('tests merkelization', () => {
           'https://github.com/iden3/claim-schema-vocab/blob/main/proofs/Iden3SparseMerkleTreeProof-v2.md#state',
           'https://github.com/iden3/claim-schema-vocab/blob/main/proofs/Iden3SparseMerkleTreeProof-v2.md#blockTimestamp'
         ]),
-        123
+        123,
+        'http://www.w3.org/2001/XMLSchema#integer'
       ),
       new RDFEntry(
         new Path([
@@ -68,7 +69,8 @@ describe('tests merkelization', () => {
           1,
           'https://github.com/iden3/claim-schema-vocab/blob/main/credentials/kyc.md#birthday'
         ]),
-        19960424
+        19960424,
+        'http://www.w3.org/2001/XMLSchema#integer'
       )
     ];
 
@@ -85,7 +87,8 @@ describe('tests merkelization', () => {
           0,
           'http://schema.org/birthDate'
         ]),
-        Temporal.Instant.from('1958-07-17T00:00:00.000Z')
+        Temporal.Instant.from('1958-07-17T00:00:00.000Z'),
+        'http://www.w3.org/2001/XMLSchema#dateTime'
       ),
       new RDFEntry(
         new Path([
@@ -93,7 +96,8 @@ describe('tests merkelization', () => {
           0,
           'http://schema.org/familyName'
         ]),
-        'SMITH'
+        'SMITH',
+        'http://www.w3.org/2001/XMLSchema#string'
       ),
       new RDFEntry(
         new Path([
@@ -101,7 +105,8 @@ describe('tests merkelization', () => {
           0,
           'http://schema.org/gender'
         ]),
-        'Male'
+        'Male',
+        'http://www.w3.org/2001/XMLSchema#string'
       ),
       new RDFEntry(
         new Path([
@@ -109,7 +114,8 @@ describe('tests merkelization', () => {
           0,
           'http://schema.org/givenName'
         ]),
-        'JOHN'
+        'JOHN',
+        'http://www.w3.org/2001/XMLSchema#string'
       ),
       new RDFEntry(
         new Path([
@@ -117,7 +123,8 @@ describe('tests merkelization', () => {
           0,
           'http://schema.org/image'
         ]),
-        'data:image/png;base64,iVBORw0KGgokJggg=='
+        'data:image/png;base64,iVBORw0KGgokJggg==',
+        ''
       ),
       new RDFEntry(
         new Path([
@@ -126,7 +133,8 @@ describe('tests merkelization', () => {
           'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
           0
         ]),
-        'http://schema.org/Person'
+        'http://schema.org/Person',
+        ''
       ),
       new RDFEntry(
         new Path([
@@ -135,7 +143,8 @@ describe('tests merkelization', () => {
           'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
           1
         ]),
-        'https://w3id.org/citizenship#PermanentResident'
+        'https://w3id.org/citizenship#PermanentResident',
+        ''
       ),
       new RDFEntry(
         new Path([
@@ -143,7 +152,8 @@ describe('tests merkelization', () => {
           0,
           'https://w3id.org/citizenship#birthCountry'
         ]),
-        'Bahamas'
+        'Bahamas',
+        'http://www.w3.org/2001/XMLSchema#string'
       ),
       new RDFEntry(
         new Path([
@@ -151,7 +161,8 @@ describe('tests merkelization', () => {
           0,
           'https://w3id.org/citizenship#commuterClassification'
         ]),
-        'C1'
+        'C1',
+        'http://www.w3.org/2001/XMLSchema#string'
       ),
       new RDFEntry(
         new Path([
@@ -159,7 +170,8 @@ describe('tests merkelization', () => {
           0,
           'https://w3id.org/citizenship#lprCategory'
         ]),
-        'C09'
+        'C09',
+        'http://www.w3.org/2001/XMLSchema#string'
       ),
       new RDFEntry(
         new Path([
@@ -167,7 +179,8 @@ describe('tests merkelization', () => {
           0,
           'https://w3id.org/citizenship#lprNumber'
         ]),
-        '999-999-999'
+        '999-999-999',
+        'http://www.w3.org/2001/XMLSchema#string'
       ),
       new RDFEntry(
         new Path([
@@ -175,7 +188,8 @@ describe('tests merkelization', () => {
           0,
           'https://w3id.org/citizenship#residentSince'
         ]),
-        Temporal.Instant.from('2015-01-01T00:00:00.000Z')
+        Temporal.Instant.from('2015-01-01T00:00:00.000Z'),
+        'http://www.w3.org/2001/XMLSchema#dateTime'
       ),
       new RDFEntry(
         new Path([
@@ -183,7 +197,8 @@ describe('tests merkelization', () => {
           1,
           'http://schema.org/birthDate'
         ]),
-        Temporal.Instant.from('1958-07-18T00:00:00.000Z')
+        Temporal.Instant.from('1958-07-18T00:00:00.000Z'),
+        'http://www.w3.org/2001/XMLSchema#dateTime'
       ),
       new RDFEntry(
         new Path([
@@ -191,7 +206,8 @@ describe('tests merkelization', () => {
           1,
           'http://schema.org/familyName'
         ]),
-        'SMITH'
+        'SMITH',
+        'http://www.w3.org/2001/XMLSchema#string'
       ),
       new RDFEntry(
         new Path([
@@ -199,7 +215,8 @@ describe('tests merkelization', () => {
           1,
           'http://schema.org/gender'
         ]),
-        'Male'
+        'Male',
+        'http://www.w3.org/2001/XMLSchema#string'
       ),
       new RDFEntry(
         new Path([
@@ -207,7 +224,8 @@ describe('tests merkelization', () => {
           1,
           'http://schema.org/givenName'
         ]),
-        'JOHN'
+        'JOHN',
+        'http://www.w3.org/2001/XMLSchema#string'
       ),
       new RDFEntry(
         new Path([
@@ -215,7 +233,8 @@ describe('tests merkelization', () => {
           1,
           'http://schema.org/image'
         ]),
-        'data:image/png;base64,iVBORw0KGgokJggg=='
+        'data:image/png;base64,iVBORw0KGgokJggg==',
+        ''
       ),
       new RDFEntry(
         new Path([
@@ -224,7 +243,8 @@ describe('tests merkelization', () => {
           'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
           0
         ]),
-        'http://schema.org/Person'
+        'http://schema.org/Person',
+        ''
       ),
       new RDFEntry(
         new Path([
@@ -233,7 +253,8 @@ describe('tests merkelization', () => {
           'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
           1
         ]),
-        'https://w3id.org/citizenship#PermanentResident'
+        'https://w3id.org/citizenship#PermanentResident',
+        ''
       ),
       new RDFEntry(
         new Path([
@@ -241,7 +262,8 @@ describe('tests merkelization', () => {
           1,
           'https://w3id.org/citizenship#birthCountry'
         ]),
-        'Bahamas'
+        'Bahamas',
+        'http://www.w3.org/2001/XMLSchema#string'
       ),
       new RDFEntry(
         new Path([
@@ -249,7 +271,8 @@ describe('tests merkelization', () => {
           1,
           'https://w3id.org/citizenship#commuterClassification'
         ]),
-        'C1'
+        'C1',
+        'http://www.w3.org/2001/XMLSchema#string'
       ),
       new RDFEntry(
         new Path([
@@ -257,7 +280,8 @@ describe('tests merkelization', () => {
           1,
           'https://w3id.org/citizenship#lprCategory'
         ]),
-        'C09'
+        'C09',
+        'http://www.w3.org/2001/XMLSchema#string'
       ),
       new RDFEntry(
         new Path([
@@ -265,7 +289,8 @@ describe('tests merkelization', () => {
           1,
           'https://w3id.org/citizenship#lprNumber'
         ]),
-        '999-999-999'
+        '999-999-999',
+        'http://www.w3.org/2001/XMLSchema#string'
       ),
       new RDFEntry(
         new Path([
@@ -273,41 +298,60 @@ describe('tests merkelization', () => {
           1,
           'https://w3id.org/citizenship#residentSince'
         ]),
-        Temporal.Instant.from('2015-01-01T00:00:00.000Z')
+        Temporal.Instant.from('2015-01-01T00:00:00.000Z'),
+        'http://www.w3.org/2001/XMLSchema#dateTime'
       ),
       new RDFEntry(
         new Path(['http://schema.org/description']),
-        'Government of Example Permanent Resident Card.'
+        'Government of Example Permanent Resident Card.',
+        'http://www.w3.org/2001/XMLSchema#string'
       ),
-      new RDFEntry(new Path(['http://schema.org/identifier']), 83627465),
-      new RDFEntry(new Path(['http://schema.org/name']), 'Permanent Resident Card'),
+      new RDFEntry(
+        new Path(['http://schema.org/identifier']),
+        83627465,
+        'http://www.w3.org/2001/XMLSchema#integer'
+      ),
+      new RDFEntry(
+        new Path(['http://schema.org/name']),
+        'Permanent Resident Card',
+        'http://www.w3.org/2001/XMLSchema#string'
+      ),
       new RDFEntry(
         new Path(['http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 0]),
-        'https://w3id.org/citizenship#PermanentResidentCard'
+        'https://w3id.org/citizenship#PermanentResidentCard',
+        ''
       ),
       new RDFEntry(
         new Path(['http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 1]),
-        'https://www.w3.org/2018/credentials#VerifiableCredential'
+        'https://www.w3.org/2018/credentials#VerifiableCredential',
+        ''
       ),
       new RDFEntry(
         new Path(['https://www.w3.org/2018/credentials#credentialSubject', 0]),
-        'did:example:b34ca6cd37bbf23'
+        'did:example:b34ca6cd37bbf23',
+        ''
       ),
       new RDFEntry(
         new Path(['https://www.w3.org/2018/credentials#credentialSubject', 1]),
-        'did:example:b34ca6cd37bbf24'
+        'did:example:b34ca6cd37bbf24',
+        ''
       ),
       new RDFEntry(
         new Path(['https://www.w3.org/2018/credentials#expirationDate']),
-        Temporal.Instant.from('2029-12-03T12:19:52.000Z')
+        //value: "2029-12-03T12:19:52Z",
+        Temporal.Instant.from('2029-12-03T12:19:52.000Z'),
+        'http://www.w3.org/2001/XMLSchema#dateTime'
       ),
       new RDFEntry(
         new Path(['https://www.w3.org/2018/credentials#issuanceDate']),
-        Temporal.Instant.from('2019-12-03T12:19:52.000Z')
+        //value: "2019-12-03T12:19:52Z",
+        Temporal.Instant.from('2019-12-03T12:19:52.000Z'),
+        'http://www.w3.org/2001/XMLSchema#dateTime'
       ),
       new RDFEntry(
         new Path(['https://www.w3.org/2018/credentials#issuer']),
-        'did:example:489398593'
+        'did:example:489398593',
+        ''
       )
     ];
 
@@ -630,6 +674,13 @@ describe('tests merkelization', () => {
         datatype: 'http://www.w3.org/2001/XMLSchema#double',
         value: '100000.01',
         wantHash: '15818843047081382538159097715644330692873067854222195813394816036608348381949'
+      },
+      {
+        name: 'big float64 should be correctly parsed as integer',
+        pathToField: 'KYCCountryOfResidenceCredential.countryCode',
+        datatype: 'http://www.w3.org/2001/XMLSchema#integer',
+        value: 19960424,
+        wantHash: '19960424'
       }
     ];
 
@@ -710,5 +761,72 @@ describe('tests merkelization', () => {
     expect(value1?.toString()).toEqual(
       '6297999125319810690293316740165599291730656617454026745496759658030130583296'
     );
+  });
+
+  it('check roots', async () => {
+    const testPresentationDoc = {
+      id: 'uuid:presentation:12312',
+      '@context': [
+        'https://www.w3.org/2018/credentials/v1',
+        'https://raw.githubusercontent.com/demonsh/schema/main/jsonld/presentation.json-ld#Presentation'
+      ],
+      type: ['VerifiableCredential'],
+      expirationDate: undefined,
+      issuanceDate: '2023-03-08T22:02:16Z',
+      issuer: 'did:pkh:eip155:1:0x1e903ddDFf29f13fC62F3c78c5b5622a3b14752c',
+      credentialSubject: {
+        id: 'did:pkh:eip155:1:0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
+        score: 64,
+        type: 'Presentation'
+      }
+    };
+
+    const mz = await Merklizer.merklizeJSONLD(JSON.stringify(testPresentationDoc));
+
+    const testPresentationDoc2 = {
+      id: 'uuid:presentation:12312',
+      '@context': [
+        'https://www.w3.org/2018/credentials/v1',
+        'https://raw.githubusercontent.com/demonsh/schema/main/jsonld/presentation.json-ld#Presentation'
+      ],
+      type: ['VerifiableCredential'],
+      issuanceDate: '2023-03-08T22:02:16Z',
+      issuer: 'did:pkh:eip155:1:0x1e903ddDFf29f13fC62F3c78c5b5622a3b14752c',
+      credentialSubject: {
+        id: 'did:pkh:eip155:1:0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
+        score: 64,
+        type: 'Presentation'
+      }
+    };
+
+    const mz2 = await Merklizer.merklizeJSONLD(JSON.stringify(testPresentationDoc2));
+    expect((await mz.root()).toString()).toEqual((await mz2.root()).toString());
+  });
+
+  it('xsd:dateTime', async () => {
+    const mz = await Merklizer.merklizeJSONLD(testDocument);
+
+    const path = new Path([
+      'https://www.w3.org/2018/credentials#credentialSubject',
+      1,
+      'http://schema.org/birthDate'
+    ]);
+
+    const datatype = await mz.jsonLDType(path);
+    expect('http://www.w3.org/2001/XMLSchema#dateTime').toEqual(datatype);
+  });
+
+  it('empty datatype', async () => {
+    const mz = await Merklizer.merklizeJSONLD(testDocument);
+
+    const path = new Path([
+      'https://www.w3.org/2018/credentials#credentialSubject',
+      0,
+      'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
+      0
+    ]);
+
+    const datatype = await mz.jsonLDType(path);
+    expect('').toEqual(datatype);
   });
 });

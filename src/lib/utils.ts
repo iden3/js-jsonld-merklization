@@ -69,7 +69,7 @@ export const convertStringToXsdValue = (dataType: string, valueStr: string): Val
     case XSDNS.NegativeInteger:
     case XSDNS.PositiveInteger:
       value = parseInt(valueStr);
-      if (isNaN(value)) {
+      if (isNaN(value) || value.toString() !== valueStr){
         throw new Error('incorrect integer value');
       }
       break;
