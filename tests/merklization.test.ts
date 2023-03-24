@@ -791,6 +791,12 @@ describe('tests merkelization', () => {
         value:    1234567890123456,
         wantHash: strHash("1.234567890123456E15"),
       },
+      {
+        name:     "xsd:dateTime in the distant future",
+        datatype: "http://www.w3.org/2001/XMLSchema#dateTime",
+        value:    "4000-01-01T00:00:00Z",
+        wantHash: "64060588800000000000",
+      }
     ];
 
     for (const tc of testCases) {
