@@ -1,4 +1,5 @@
-export const doc1 = `{
+export const doc1 = `
+{
     "@context": [
         "https://www.w3.org/2018/credentials/v1",
         "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/iden3credential-v2.json-ld",
@@ -9,7 +10,7 @@ export const doc1 = `{
         "KYCAgeCredential"
     ],
     "id": "http://myid.com",
-    "expirationDate": "2361-03-21T21:14:48+02:00",
+    "expirationDate": "2261-03-21T21:14:48+02:00",
     "credentialSubject": {
         "type": "KYCAgeCredential",
         "id": "did:iden3:polygon:mumbai:wyFiV4w71QgWPn6bYLsZoysFay66gKtVa9kfu6yMZ",
@@ -71,15 +72,12 @@ export const multigraphDoc2 = `{
 
 export const testDocument = `{
   "@context": [
-      "https://www.w3.org/2018/credentials/v1",
-      "https://w3id.org/citizenship/v1",
-      "https://w3id.org/security/bbs/v1"
+    "https://www.w3.org/2018/credentials/v1",
+    "https://w3id.org/citizenship/v1",
+    "https://w3id.org/security/bbs/v1"
   ],
   "id": "https://issuer.oidp.uscis.gov/credentials/83627465",
-  "type": [
-      "VerifiableCredential",
-      "PermanentResidentCard"
-  ],
+  "type": ["VerifiableCredential", "PermanentResidentCard"],
   "issuer": "did:example:489398593",
   "identifier": 83627465,
   "name": "Permanent Resident Card",
@@ -87,40 +85,34 @@ export const testDocument = `{
   "issuanceDate": "2019-12-03T12:19:52Z",
   "expirationDate": "2029-12-03T12:19:52Z",
   "credentialSubject": [
-      {
-          "id": "did:example:b34ca6cd37bbf23",
-          "type": [
-              "PermanentResident",
-              "Person"
-          ],
-          "givenName": "JOHN",
-          "familyName": "SMITH",
-          "gender": "Male",
-          "image": "data:image/png;base64,iVBORw0KGgokJggg==",
-          "residentSince": "2015-01-01",
-          "lprCategory": "C09",
-          "lprNumber": "999-999-999",
-          "commuterClassification": "C1",
-          "birthCountry": "Bahamas",
-          "birthDate": "1958-07-17"
-      },
-      {
-          "id": "did:example:b34ca6cd37bbf24",
-          "type": [
-              "PermanentResident",
-              "Person"
-          ],
-          "givenName": "JOHN",
-          "familyName": "SMITH",
-          "gender": "Male",
-          "image": "data:image/png;base64,iVBORw0KGgokJggg==",
-          "residentSince": "2015-01-01",
-          "lprCategory": "C09",
-          "lprNumber": "999-999-999",
-          "commuterClassification": "C1",
-          "birthCountry": "Bahamas",
-          "birthDate": "1958-07-18"
-      }
+    {
+      "id": "did:example:b34ca6cd37bbf23",
+      "type": ["PermanentResident", "Person"],
+      "givenName": "JOHN",
+      "familyName": "SMITH",
+      "gender": "Male",
+      "image": "data:image/png;base64,iVBORw0KGgokJggg==",
+      "residentSince": "2015-01-01",
+      "lprCategory": "C09",
+      "lprNumber": "999-999-999",
+      "commuterClassification": "C1",
+      "birthCountry": "Bahamas",
+      "birthDate": "1958-07-17"
+    },
+    {
+      "id": "did:example:b34ca6cd37bbf24",
+      "type": ["PermanentResident", "Person"],
+      "givenName": "JOHN",
+      "familyName": "SMITH",
+      "gender": "Male",
+      "image": "data:image/png;base64,iVBORw0KGgokJggg==",
+      "residentSince": "2015-01-01",
+      "lprCategory": "C09",
+      "lprNumber": "999-999-999",
+      "commuterClassification": "C1",
+      "birthCountry": "Bahamas",
+      "birthDate": "1958-07-18"
+    }
   ]
 }`;
 
@@ -442,3 +434,33 @@ export const kycschema_jsonld = `{
     }
   ]
 }`;
+export const docWithDouble = `{
+  "http://example.com/field1": {
+    "@type": "http://www.w3.org/2001/XMLSchema#double",
+    "@value": 123
+  },
+  "http://example.com/field2": {
+    "@type": "http://www.w3.org/2001/XMLSchema#double",
+    "@value": "123"
+  }
+}`
+export const vp = `{
+  "verifiableCredential": {
+    "@context": [
+      "https://www.w3.org/2018/credentials/v1",
+      "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v101.json-ld"
+    ],
+    "@type": [
+      "VerifiableCredential",
+      "KYCEmployee"
+    ],
+    "credentialSubject": {
+      "@type": "KYCEmployee",
+      "salary": 170000
+    }
+  },
+  "@type": "VerifiablePresentation",
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1"
+  ]
+}`

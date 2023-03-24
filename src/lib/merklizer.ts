@@ -150,7 +150,7 @@ export class Merklizer {
     dataType: string,
     value: unknown
   ): Promise<bigint> {
-    const valueStr = convertAnyToString(value);
+    const valueStr = convertAnyToString(value, dataType);
 
     const xsdValue = convertStringToXsdValue(dataType, valueStr);
 

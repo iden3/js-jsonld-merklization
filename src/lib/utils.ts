@@ -1,6 +1,6 @@
 import { Quad } from 'n3';
 import { MerklizationConstants } from './constants';
-import { Value, XSDNS } from './types/types';
+import { canonicalDouble, isDouble, Value, XSDNS } from './types/types';
 import { Temporal } from 'temporal-polyfill';
 
 export function getGraphName(q: Quad): string {
@@ -69,7 +69,7 @@ export const convertStringToXsdValue = (dataType: string, valueStr: string): Val
     case XSDNS.NegativeInteger:
     case XSDNS.PositiveInteger:
       value = parseInt(valueStr);
-      if (isNaN(value) || value.toString() !== valueStr){
+      if (isNaN(value) || value.toString() !== valueStr) {
         throw new Error('incorrect integer value');
       }
       break;
@@ -85,18 +85,25 @@ export const convertStringToXsdValue = (dataType: string, valueStr: string): Val
       }
       break;
     }
+    case XSDNS.Double:
+      value = canonicalDouble(parseFloat(valueStr));
+      break;
     default:
       value = valueStr;
   }
   return value;
 };
 
-export const convertAnyToString = (v: unknown): string => {
+export const convertAnyToString = (v: unknown, datatype: string): string => {
+  const isDoubleType = datatype === XSDNS.Double;
   switch (typeof v) {
     case 'string':
-    case 'number':
+      return isDoubleType ? canonicalDouble(parseFloat(v)) : v;
     case 'boolean':
       return `${v}`;
+    case 'number': {
+      return isDoubleType ? canonicalDouble(v) : `${v}`;
+    }
     default:
       throw new Error('unsupported type');
   }
