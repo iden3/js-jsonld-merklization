@@ -85,7 +85,7 @@ export const convertStringToXsdValue = (dataType: string, valueStr: string): Val
       }
       break;
     }
-    // this is for v2
+    // this is for v2 
     // case XSDNS.Double:
     //     value = canonicalDouble(parseFloat(valueStr));
 
