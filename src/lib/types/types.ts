@@ -23,7 +23,7 @@ export enum XSDNS {
   DateTime = 'http://www.w3.org/2001/XMLSchema#dateTime',
   Double = 'http://www.w3.org/2001/XMLSchema#double'
 }
-export const isDouble = (v: number) => String(v).indexOf('.') !== -1 || Math.abs(v) >= 1e21;
+export const isDouble = (v: number) => String(v).includes('.') || Math.abs(v) >= 1e21;
 
 export const canonicalDouble = (v: number) => v.toExponential(15).replace(/(\d)0*e\+?/, '$1E');
 
