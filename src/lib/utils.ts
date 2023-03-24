@@ -85,39 +85,24 @@ export const convertStringToXsdValue = (dataType: string, valueStr: string): Val
       }
       break;
     }
-    // this is for v2 
-    // case XSDNS.Double:
-    //     value = canonicalDouble(parseFloat(valueStr));
-
+    case XSDNS.Double:
+      value = canonicalDouble(parseFloat(valueStr));
+      break;
     default:
       value = valueStr;
   }
   return value;
 };
 
-export const convertAnyToString = (v: unknown, datatype:string): string => {
- 
-  if (datatype === XSDNS.Double){
-    switch (typeof v) {
-      case 'string':
-          return canonicalDouble(parseFloat(v));
-      case 'number': {
-          return canonicalDouble(v);
-      }
-      default:
-        throw new Error('unsupported value type for http://www.w3.org/2001/XMLSchema#double' );
-    }
-  }
-
+export const convertAnyToString = (v: unknown, datatype: string): string => {
+  const isDoubleType = datatype === XSDNS.Double;
   switch (typeof v) {
     case 'string':
+      return isDoubleType ? canonicalDouble(parseFloat(v)) : v;
     case 'boolean':
       return `${v}`;
     case 'number': {
-      if (isDouble(v)) {
-        return canonicalDouble(v);
-      }
-      return `${v}`;
+      return isDoubleType ? canonicalDouble(v) : `${v}`;
     }
     default:
       throw new Error('unsupported type');
