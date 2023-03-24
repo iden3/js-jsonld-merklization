@@ -8,7 +8,8 @@ import {
   doc1,
   multigraphDoc,
   multigraphDoc2,
-  testDocument
+  testDocument,
+  credential_vp
 } from './data';
 import { Merkletree, verifyProof, InMemoryDB, str2Bytes } from '@iden3/js-merkletree';
 import { DEFAULT_HASHER } from '../src/lib/poseidon';
@@ -828,5 +829,18 @@ describe('tests merkelization', () => {
 
     const datatype = await mz.jsonLDType(path);
     expect('').toEqual(datatype);
+  });
+
+  it.only('TestCurrentVP', async () => {
+    const input = 'verifiableCredential.credentialSchema.countryCode';
+    const result = await Path.newPathFromCtx(credential_vp, input);
+
+    const want = new Path([
+      'https://www.w3.org/2018/credentials#VerifiableCredential',
+      'https://www.w3.org/2018/credentials#credentialSchema',
+      'https://github.com/iden3/claim-schema-vocab/blob/main/credentials/kyc.md#countryCode'
+    ]);
+
+    expect(want).toEqual(result);
   });
 });

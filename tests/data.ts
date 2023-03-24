@@ -442,3 +442,21 @@ export const kycschema_jsonld = `{
     }
   ]
 }`;
+
+export const credential_vp = `{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1"
+  ],
+  "@type": "VerifiablePresentation",
+  "verifiableCredential": {
+    "@context": [
+      "https://www.w3.org/2018/credentials/v1",
+      "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v3.json-ld"
+    ],
+    "@type": ["VerifiableCredential","KYCCountryOfResidenceCredential"],
+    "credentialSubject": {
+      "type": "KYCCountryOfResidenceCredential",
+      "countryCode": 800
+    }
+  }
+}`;
