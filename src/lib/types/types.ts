@@ -1,4 +1,4 @@
-import { Temporal } from 'temporal-polyfill';
+import { Temporal } from '@js-temporal/polyfill';
 
 export interface Hasher {
   hash: (inp: bigint[]) => Promise<bigint>;

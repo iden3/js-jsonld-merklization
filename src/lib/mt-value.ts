@@ -2,7 +2,7 @@ import { MerklizationConstants } from './constants';
 import { Hasher } from './types/types';
 import { Value } from './types/types';
 import { DEFAULT_HASHER } from './poseidon';
-import { Temporal } from 'temporal-polyfill';
+import { Temporal } from '@js-temporal/polyfill';
 
 const bytesEncoder = new TextEncoder();
 
