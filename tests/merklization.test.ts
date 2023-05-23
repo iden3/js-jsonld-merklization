@@ -16,7 +16,7 @@ import { Merkletree, verifyProof, InMemoryDB, str2Bytes } from '@iden3/js-merkle
 import { DEFAULT_HASHER } from '../src/lib/poseidon';
 import { Path } from '../src/lib/path';
 import { MtValue } from '../src/lib/mt-value';
-import { Temporal } from 'temporal-polyfill';
+import { Temporal } from '@js-temporal/polyfill'
 import { TestHasher } from './hasher';
 import { poseidon } from '@iden3/js-crypto';
 import { TextEncoder } from 'util';
@@ -826,7 +826,7 @@ describe('tests merkelization', () => {
         pathToField: 'KYCEmployee.hireDate',
         datatype: 'http://www.w3.org/2001/XMLSchema#dateTime',
         value: '01-01-2019',
-        wantErr: "Cannot parse dateTime '01-01-2019"
+        wantErr: "invalid ISO 8601 string: 01-01-2019"
       },
       {
         name: 'unknown datatype',

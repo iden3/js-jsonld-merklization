@@ -1,7 +1,7 @@
 import { Quad } from 'n3';
 import { MerklizationConstants } from './constants';
-import { canonicalDouble, isDouble, Value, XSDNS } from './types/types';
-import { Temporal } from 'temporal-polyfill';
+import { canonicalDouble, Value, XSDNS } from './types/types';
+import { Temporal } from '@js-temporal/polyfill';
 
 export function getGraphName(q: Quad): string {
   if (!q.graph.value) {

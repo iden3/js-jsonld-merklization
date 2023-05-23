@@ -10,7 +10,7 @@ import { RDFDataset } from './rdf-dataset';
 import { Relationship } from './relationship';
 import { DatasetIdx } from './dataset-idx';
 import { QuadArrKey } from './quad-arr-key';
-import { Temporal } from 'temporal-polyfill';
+import { Temporal } from '@js-temporal/polyfill';
 
 export class RDFEntry {
   constructor(
