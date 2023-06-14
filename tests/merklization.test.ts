@@ -991,9 +991,13 @@ describe('tests merkelization', () => {
 describe('merklize document with ipfs context', () => {
   // node --experimental-vm-modules node_modules/jest/bin/jest.js -t 'set kubo client' tests/merklization.test.ts
   it('ipfsNodeURL is set', async () => {
-    // TODO get ipfsNodeURL from env
+    const ipfsNodeURL = process.env.IPFS_URL ?? null;
+    if (ipfsNodeURL === null) {
+      console.warn('IPFS_URL is not set, skipping IPFS Node test');
+      return;
+    }
     const mz: Merklizer = await Merklizer.merklizeJSONLD(ipfsDocument, {
-      ipfsNodeURL: 'http://127.0.0.1:45005'
+      ipfsNodeURL: ipfsNodeURL
     });
     expect((await mz.root()).bigInt().toString()).toEqual(
       '19309047812100087948241250053335720576191969395309912987389452441269932261840'
