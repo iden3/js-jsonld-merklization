@@ -999,6 +999,15 @@ describe('merklize document with ipfs context', () => {
       '19309047812100087948241250053335720576191969395309912987389452441269932261840'
     );
   });
+
+  it('ipfsGatewayURL is set', async () => {
+    const mz: Merklizer = await Merklizer.merklizeJSONLD(ipfsDocument, {
+      ipfsGatewayURL: 'http://ipfs.io'
+    });
+    expect((await mz.root()).bigInt().toString()).toEqual(
+      '19309047812100087948241250053335720576191969395309912987389452441269932261840'
+    );
+  });
 });
 
 function strHash(str: string): string {
