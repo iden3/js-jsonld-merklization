@@ -7,7 +7,7 @@ import { addEntriesToMerkleTree, getMerkleTreeInitParam } from './merkle-tree';
 import { RDFEntry } from './rdf-entry';
 import { Path } from './path';
 import { MtValue } from './mt-value';
-import { jsonLdDocLoader } from '../loaders/jsonld-loader';
+import { getJsonLdDocLoader } from '../loaders/jsonld-loader';
 import { convertAnyToString, convertStringToXsdValue } from './utils';
 
 export class Merklizer {
@@ -116,13 +116,18 @@ export class Merklizer {
   static async merklizeJSONLD(
     docStr: string,
     opts?: {
-      hasher: Hasher;
+      hasher?: Hasher;
+      ipfsNodeURL?: string;
+      ipfsGatewayURL?: string;
     }
   ): Promise<Merklizer> {
     const hasher = opts?.hasher ?? DEFAULT_HASHER;
+    const ipfsNodeURL = opts?.ipfsNodeURL ?? null;
+    const ipfsGatewayURL = opts?.ipfsGatewayURL ?? null;
     const mz = new Merklizer(docStr, null, hasher);
     const doc = JSON.parse(mz.srcDoc);
-    const dataset = await RDFDataset.fromDocument(doc);
+    const documentLoader = getJsonLdDocLoader(ipfsNodeURL, ipfsGatewayURL);
+    const dataset = await RDFDataset.fromDocument(doc, documentLoader);
     const entries = await RDFEntry.fromDataSet(dataset, hasher);
 
     for (const e of entries) {
@@ -135,7 +140,7 @@ export class Merklizer {
     mz.compacted = await compact(
       doc,
       {},
-      { documentLoader: jsonLdDocLoader, base: null, compactArrays: true, compactToRelative: true }
+      { documentLoader: documentLoader, base: null, compactArrays: true, compactToRelative: true }
     );
 
     return mz;

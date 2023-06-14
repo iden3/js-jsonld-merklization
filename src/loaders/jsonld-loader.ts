@@ -141,9 +141,74 @@ export class JsonLDLoader {
   }
 }
 
-async function _fetch({ url }) {
+const ipfsMethodCat = 'cat';
+
+function normalizeIPFSNodeURL(ipfsNodeURL: string, apiMethod: string): string {
+  const apiSuffix = '/api/v0';
+
+  while (ipfsNodeURL.endsWith('/')) {
+    ipfsNodeURL = ipfsNodeURL.slice(0, -1);
+  }
+
+  if (!ipfsNodeURL.endsWith(apiSuffix)) {
+    ipfsNodeURL += apiSuffix;
+  }
+
+  return ipfsNodeURL + '/' + apiMethod;
+}
+
+async function loadIPFS(
+  url: string,
+  ipfsNodeURL: string,
+  ipfsGatewayURL: string
+): Promise<RemoteDocument> {
+  const documentURL = ipfsURLPrefix + url;
+
+  if (ipfsNodeURL === null && ipfsGatewayURL === null) {
+    throw new JsonLdError('IPFS is not configured', 'jsonld.IPFSNotConfigured', {
+      code: 'loading document failed',
+      url: documentURL
+    });
+  }
+
+  if (ipfsNodeURL === null) {
+    // TODO: implement IPFS gateway support
+    throw new JsonLdError('IPFS Gateway is not supported yes', 'jsonld.IPFSNotConfigured', {
+      code: 'loading document failed',
+      url: documentURL
+    });
+  }
+
+  const catRequestURL = new URL(normalizeIPFSNodeURL(ipfsNodeURL, ipfsMethodCat));
+  catRequestURL.searchParams.append('arg', url);
+
+  const { res, body } = await _fetch({ url: catRequestURL, method: 'POST' });
+
+  if (res.status != 200) {
+    let errorBody: string;
+    try {
+      errorBody = await res.text();
+    } catch (e) {
+      /* empty */
+    }
+
+    throw new Error(`Error calling IPFS node: [${res.status}] ${res.statusText}\n${errorBody}`);
+  }
+
+  return {
+    contextUrl: null,
+    document: body || null,
+    documentUrl: documentURL
+  };
+}
+
+async function _fetch({ url, method }: { url: string | URL; method?: string }) {
+  const options = {};
+  if (typeof method !== 'undefined') {
+    options['method'] = method;
+  }
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, options);
     if (res.status >= 300 && res.status < 400) {
       return { res, body: null };
     }
@@ -166,13 +231,21 @@ async function _fetch({ url }) {
   }
 }
 
-export const getJsonLdDocLoader = () => {
-  // eslint-disable-next-line  @typescript-eslint/no-unused-vars
-  const docLoader = (url: Url, callback: (err: Error, remoteDoc: RemoteDocument) => void) => {
-    const loader = new JsonLDLoader();
-    return loader.loadDocument(url) as Promise<RemoteDocument>;
-  };
-  return docLoader;
-};
+export type LoadDocumentCallback = (url: Url) => Promise<RemoteDocument>;
 
-export const jsonLdDocLoader = getJsonLdDocLoader();
+const ipfsURLPrefix = 'ipfs://';
+
+export const getJsonLdDocLoader = (
+  ipfsNodeURL: string = null,
+  ipfsGatewayURL: string = null
+): LoadDocumentCallback => {
+  return async (url: Url): Promise<RemoteDocument> => {
+    if (url.startsWith(ipfsURLPrefix)) {
+      const ipfsURL: string = url.slice(ipfsURLPrefix.length);
+      return await loadIPFS(ipfsURL, ipfsNodeURL, ipfsGatewayURL);
+    }
+
+    const loader = new JsonLDLoader();
+    return loader.loadDocument(url, []);
+  };
+};
