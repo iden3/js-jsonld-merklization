@@ -1,7 +1,7 @@
 import { MerklizationConstants } from './constants';
 import { Quad, Parser } from 'n3';
 import { canonize, JsonLdDocument } from 'jsonld';
-import { getJsonLdDocLoader, LoadDocumentCallback } from '../loaders/jsonld-loader';
+import { LoadDocumentCallback } from '../loaders/jsonld-loader';
 import { DatasetIdx } from './dataset-idx';
 import { getGraphName } from './utils';
 import { RefTp } from './ref-tp';
