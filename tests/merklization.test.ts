@@ -1019,6 +1019,12 @@ describe('merklize document with ipfs context', () => {
       '19309047812100087948241250053335720576191969395309912987389452441269932261840'
     );
   });
+
+  it('IPFS is not configured', async () => {
+    await expect(Merklizer.merklizeJSONLD(ipfsDocument)).rejects.toThrow(
+      'Dereferencing a URL did not result in a valid JSON-LD object'
+    );
+  });
 });
 
 async function pushSchemasToIPFS(ipfsNodeURL: string): Promise<void> {
