@@ -1,3 +1,4 @@
+import { readFile } from 'fs/promises';
 import { Merklizer } from './../src/lib/merklizer';
 import { MerklizationConstants } from './../src/lib/constants';
 import { RDFEntry } from './../src/lib/rdf-entry';
@@ -21,7 +22,7 @@ import { Temporal } from '@js-temporal/polyfill';
 import { TestHasher } from './hasher';
 import { poseidon } from '@iden3/js-crypto';
 import { TextEncoder } from 'util';
-import { getJsonLdDocLoader } from '../src/loaders/jsonld-loader';
+import { getJsonLdDocLoader, normalizeIPFSNodeURL } from '../src/loaders/jsonld-loader';
 
 describe('tests merkelization', () => {
   it('multigraph TestEntriesFromRDF', async () => {
@@ -990,12 +991,18 @@ describe('tests merkelization', () => {
 
 describe('merklize document with ipfs context', () => {
   // node --experimental-vm-modules node_modules/jest/bin/jest.js -t 'set kubo client' tests/merklization.test.ts
+
+  const ipfsNodeURL = process.env.IPFS_URL ?? null;
+  if (ipfsNodeURL === null) {
+    console.warn('IPFS_URL is not set, skipping IPFS Node test');
+    return;
+  }
+
+  beforeAll(async () => {
+    await pushSchemasToIPFS(ipfsNodeURL);
+  });
+
   it('ipfsNodeURL is set', async () => {
-    const ipfsNodeURL = process.env.IPFS_URL ?? null;
-    if (ipfsNodeURL === null) {
-      console.warn('IPFS_URL is not set, skipping IPFS Node test');
-      return;
-    }
     const mz: Merklizer = await Merklizer.merklizeJSONLD(ipfsDocument, {
       ipfsNodeURL: ipfsNodeURL
     });
@@ -1013,6 +1020,43 @@ describe('merklize document with ipfs context', () => {
     );
   });
 });
+
+async function pushSchemasToIPFS(ipfsNodeURL: string): Promise<void> {
+  const citizenshipData = await readFile('tests/testdata/citizenship-v1.jsonld');
+  const bbsData = await readFile('tests/testdata/dir1/dir2/bbs-v2.jsonld');
+
+  const formData = new FormData();
+  formData.append(
+    'file',
+    new Blob([citizenshipData], { type: 'application/octet-stream' }),
+    'citizenship-v1.jsonld'
+  );
+  formData.append(
+    'file',
+    new Blob([bbsData], { type: 'application/octet-stream' }),
+    'dir1/dir2/bbs-v2.jsonld'
+  );
+
+  const addURL = normalizeIPFSNodeURL(ipfsNodeURL, 'add');
+  const res = await fetch(addURL, {
+    method: 'POST',
+    body: formData
+  });
+
+  const resBody = await res.text();
+  const records = resBody
+    .split('\n')
+    .filter((l) => {
+      return l.trim().length > 0;
+    })
+    .map((l) => {
+      return JSON.parse(l).Hash;
+    });
+
+  // Check that URLs from ipfsDocument are uploaded to IPFS
+  expect(records).toContain('QmdP4MZkESEabRVB322r2xWm7TCi7LueMNWMJawYmSy7hp');
+  expect(records).toContain('Qmbp4kwoHULnmK71abrxdksjPH5sAjxSAXU5PEp2XRMFNw');
+}
 
 function strHash(str: string): string {
   return poseidon.hashBytes(new TextEncoder().encode(str)).toString();

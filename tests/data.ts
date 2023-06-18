@@ -443,7 +443,8 @@ export const docWithDouble = `{
     "@type": "http://www.w3.org/2001/XMLSchema#double",
     "@value": "123"
   }
-}`
+}`;
+
 export const vp = `{
   "verifiableCredential": {
     "@context": [
@@ -463,7 +464,7 @@ export const vp = `{
   "@context": [
     "https://www.w3.org/2018/credentials/v1"
   ]
-}`
+}`;
 
 export const ipfsDocument = `{
   "@context": [
@@ -509,4 +510,4 @@ export const ipfsDocument = `{
       "birthDate": "1958-07-18"
     }
   ]
-}`
+}`;

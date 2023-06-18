@@ -143,7 +143,7 @@ export class JsonLDLoader {
 
 const ipfsMethodCat = 'cat';
 
-function normalizeIPFSNodeURL(ipfsNodeURL: string, apiMethod: string): string {
+export function normalizeIPFSNodeURL(ipfsNodeURL: string, apiMethod: string): string {
   const apiSuffix = '/api/v0';
 
   while (ipfsNodeURL.endsWith('/')) {
