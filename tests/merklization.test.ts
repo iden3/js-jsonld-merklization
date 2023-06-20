@@ -9,6 +9,7 @@ import {
   multigraphDoc,
   multigraphDoc2,
   testDocument,
+  nestedFieldDocument,
   docWithDouble,
   vp,
 } from './data';
@@ -21,7 +22,7 @@ import { TestHasher } from './hasher';
 import { poseidon } from '@iden3/js-crypto';
 import { TextEncoder } from 'util';
 
-describe('tests merkelization', () => {
+describe.only('tests merkelization', () => {
   it('multigraph TestEntriesFromRDF', async () => {
     const dataset = await RDFDataset.fromDocument(JSON.parse(multigraphDoc2));
 
@@ -580,6 +581,18 @@ describe('tests merkelization', () => {
       'https://www.w3.org/2018/credentials#credentialSubject',
       1,
       'http://schema.org/birthDate'
+    ]);
+
+    expect(want).toEqual(result);
+  });
+
+  it.only('TestPathFromDocument - path to nested field', async () => {
+    const inp = 'objectField.customNestedField';
+    const result = await Path.fromDocument(null, nestedFieldDocument, inp);
+
+    const want = new Path([
+      'urn:uuid:87caf7a2-fee3-11ed-be56-0242ac120001#objectField',
+      'urn:uuid:87caf7a2-fee3-11ed-be56-0242ac120001#customNestedField',
     ]);
 
     expect(want).toEqual(result);

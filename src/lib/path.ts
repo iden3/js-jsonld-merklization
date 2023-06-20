@@ -233,6 +233,15 @@ export class Path {
       throw new Error(`error: @id attr is not of type stirng: ${typeof id}`);
     }
 
+    const ctxDataInner = m['@context'];
+    if (ctxDataInner) {
+      if (ldCTX) {
+        ldCTX = await ctxParser.parse(ctxDataInner, { parentContext: ldCTX.getContextRaw() });
+      } else {
+        ldCTX = await ctxParser.parse(ctxDataInner);
+      }
+    }
+
     const moreParts = await Path.pathFromDocument(ldCTX, docObjMap[term], newPathParts, true);
 
     return [id, ...moreParts];
