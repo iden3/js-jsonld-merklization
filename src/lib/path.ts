@@ -1,10 +1,13 @@
 import { MerklizationConstants } from './constants';
-import { Hasher, Parts } from './types/types';
+import { Hasher, Options, Parts } from './types/types';
 import { ContextParser, JsonLdContextNormalized } from 'jsonld-context-parser';
 import { JsonLdDocument } from 'jsonld';
 import { DEFAULT_HASHER } from './poseidon';
 import { byteEncoder, sortArr } from './utils';
-import { documentLoader } from '../loaders/document-loader';
+import { getDocumentLoader, getHasher } from './options';
+import { IDocumentLoader } from 'jsonld-context-parser/lib/IDocumentLoader';
+import { LoadDocumentCallback } from '../loaders/jsonld-loader';
+import { IJsonLdContext } from 'jsonld-context-parser/lib/JsonLdContext';
 
 export class Path {
   constructor(public parts: Parts = [], public hasher: Hasher = DEFAULT_HASHER) {}
@@ -41,13 +44,14 @@ export class Path {
     return h.hash(keyParts);
   }
 
-  async pathFromContext(docStr: string, path: string): Promise<void> {
+  async pathFromContext(docStr: string, path: string, opts?: Options): Promise<void> {
     const doc = JSON.parse(docStr);
     const context = doc['@context'];
     if (!context) {
       throw MerklizationConstants.ERRORS.CONTEXT_NOT_DEFINED;
     }
-    const ctxParser = new ContextParser({ documentLoader });
+    const docLoader = iDocumentLoaderAdapter(getDocumentLoader(opts));
+    const ctxParser = new ContextParser({ documentLoader: docLoader });
     let parsedCtx = await ctxParser.parse(doc['@context']);
 
     const parts = path.split('.');
@@ -79,10 +83,11 @@ export class Path {
     }
   }
 
-  async typeFromContext(ctxStr: string, path: string): Promise<string> {
+  async typeFromContext(ctxStr: string, path: string, opts?: Options): Promise<string> {
     const ctxObj = JSON.parse(ctxStr);
 
-    const ctxParser = new ContextParser({ documentLoader });
+    const docLoader = iDocumentLoaderAdapter(getDocumentLoader(opts));
+    const ctxParser = new ContextParser({ documentLoader: docLoader });
     let parsedCtx = await ctxParser.parse(ctxObj['@context']);
 
     const parts = path.split('.');
@@ -136,7 +141,8 @@ export class Path {
     ldCTX: JsonLdContextNormalized | null,
     doc: JsonLdDocument,
     pathParts: string[],
-    acceptArray: boolean
+    acceptArray: boolean,
+    opts?: Options
   ): Promise<Parts> {
     if (pathParts.length === 0) {
       return [];
@@ -145,11 +151,12 @@ export class Path {
     const term = pathParts[0];
     const newPathParts = pathParts.slice(1);
 
-    const ctxParser = new ContextParser({ documentLoader });
+    const docLoader = iDocumentLoaderAdapter(getDocumentLoader(opts));
+    const ctxParser = new ContextParser({ documentLoader: docLoader });
 
     if (MerklizationConstants.DIGITS_ONLY_REGEX.test(term)) {
       const num = parseInt(term);
-      const moreParts = await Path.pathFromDocument(ldCTX, doc, newPathParts, true);
+      const moreParts = await Path.pathFromDocument(ldCTX, doc, newPathParts, true, opts);
 
       return [num, ...moreParts];
     }
@@ -168,7 +175,7 @@ export class Path {
         throw MerklizationConstants.ERRORS.UNEXPECTED_ARR_ELEMENT;
       }
 
-      return Path.pathFromDocument(ldCTX, doc[0], pathParts, false);
+      return Path.pathFromDocument(ldCTX, doc[0], pathParts, false, opts);
     } else {
       docObjMap = doc;
     }
@@ -233,14 +240,14 @@ export class Path {
       throw new Error(`error: @id attr is not of type stirng: ${typeof id}`);
     }
 
-    const moreParts = await Path.pathFromDocument(ldCTX, docObjMap[term], newPathParts, true);
+    const moreParts = await Path.pathFromDocument(ldCTX, docObjMap[term], newPathParts, true, opts);
 
     return [id, ...moreParts];
   }
 
-  static async newPathFromCtx(docStr: string, path: string): Promise<Path> {
-    const p = new Path();
-    await p.pathFromContext(docStr, path);
+  static async newPathFromCtx(docStr: string, path: string, opts?: Options): Promise<Path> {
+    const p = new Path([], getHasher(opts));
+    await p.pathFromContext(docStr, path, opts);
     return p;
   }
 
@@ -264,7 +271,8 @@ export class Path {
   static async fromDocument(
     ldCTX: JsonLdContextNormalized | null,
     docStr: string,
-    path: string
+    path: string,
+    opts?: Options
   ): Promise<Path> {
     const doc = JSON.parse(docStr);
     const pathParts = path.split('.');
@@ -272,12 +280,25 @@ export class Path {
       throw MerklizationConstants.ERRORS.FIELD_PATH_IS_EMPTY;
     }
 
-    const p = await Path.pathFromDocument(ldCTX, doc, pathParts, false);
-    return new Path(p);
+    const p = await Path.pathFromDocument(ldCTX, doc, pathParts, false, opts);
+    return new Path(p, getHasher(opts));
   }
 
-  static async newTypeFromContext(contextStr: string, path: string): Promise<string> {
-    const p = new Path();
-    return await p.typeFromContext(contextStr, path);
+  static async newTypeFromContext(
+    contextStr: string,
+    path: string,
+    opts?: Options
+  ): Promise<string> {
+    const p = new Path([], getHasher(opts));
+    return await p.typeFromContext(contextStr, path, opts);
   }
+}
+
+function iDocumentLoaderAdapter(docLoader: LoadDocumentCallback): IDocumentLoader {
+  return {
+    async load(url: string): Promise<IJsonLdContext> {
+      const doc = await docLoader(url);
+      return doc.document;
+    }
+  };
 }
