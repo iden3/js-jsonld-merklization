@@ -1055,9 +1055,7 @@ async function pushSchemasToIPFS(ipfsNodeURL: string): Promise<void> {
     .filter((l) => {
       return l.trim().length > 0;
     })
-    .map((l) => {
-      return JSON.parse(l).Hash;
-    });
+    .map(l => JSON.parse(l).Hash);
 
   // Check that URLs from ipfsDocument are uploaded to IPFS
   expect(records).toContain('QmdP4MZkESEabRVB322r2xWm7TCi7LueMNWMJawYmSy7hp');
