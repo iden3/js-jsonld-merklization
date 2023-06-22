@@ -1052,9 +1052,7 @@ async function pushSchemasToIPFS(ipfsNodeURL: string): Promise<void> {
   const resBody = await res.text();
   const records = resBody
     .split('\n')
-    .filter((l) => {
-      return l.trim().length > 0;
-    })
+    .filter(l => l.trim().length > 0)
     .map(l => JSON.parse(l).Hash);
 
   // Check that URLs from ipfsDocument are uploaded to IPFS
