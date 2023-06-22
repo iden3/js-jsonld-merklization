@@ -50,7 +50,7 @@ export class Path {
     if (!context) {
       throw MerklizationConstants.ERRORS.CONTEXT_NOT_DEFINED;
     }
-    const docLoader = iDocumentLoaderAdapter(getDocumentLoader(opts));
+    const docLoader = documentLoaderAdapter(getDocumentLoader(opts));
     const ctxParser = new ContextParser({ documentLoader: docLoader });
     let parsedCtx = await ctxParser.parse(doc['@context']);
 
@@ -86,7 +86,7 @@ export class Path {
   async typeFromContext(ctxStr: string, path: string, opts?: Options): Promise<string> {
     const ctxObj = JSON.parse(ctxStr);
 
-    const docLoader = iDocumentLoaderAdapter(getDocumentLoader(opts));
+    const docLoader = documentLoaderAdapter(getDocumentLoader(opts));
     const ctxParser = new ContextParser({ documentLoader: docLoader });
     let parsedCtx = await ctxParser.parse(ctxObj['@context']);
 
@@ -151,7 +151,7 @@ export class Path {
     const term = pathParts[0];
     const newPathParts = pathParts.slice(1);
 
-    const docLoader = iDocumentLoaderAdapter(getDocumentLoader(opts));
+    const docLoader = documentLoaderAdapter(getDocumentLoader(opts));
     const ctxParser = new ContextParser({ documentLoader: docLoader });
 
     if (MerklizationConstants.DIGITS_ONLY_REGEX.test(term)) {
@@ -294,7 +294,7 @@ export class Path {
   }
 }
 
-function iDocumentLoaderAdapter(docLoader: LoadDocumentCallback): IDocumentLoader {
+function documentLoaderAdapter(docLoader: LoadDocumentCallback): IDocumentLoader {
   return {
     async load(url: string): Promise<IJsonLdContext> {
       const doc = await docLoader(url);

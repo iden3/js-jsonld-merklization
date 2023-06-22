@@ -131,7 +131,7 @@ export class Merklizer {
     mz.compacted = await compact(
       doc,
       {},
-      { documentLoader: documentLoader, base: null, compactArrays: true, compactToRelative: true }
+      { documentLoader, base: null, compactArrays: true, compactToRelative: true }
     );
 
     return mz;

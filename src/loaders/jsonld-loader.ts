@@ -182,7 +182,7 @@ async function loadIPFS(
 ): Promise<RemoteDocument> {
   const documentURL = ipfsURLPrefix + url;
 
-  if (ipfsNodeURL === null && ipfsGatewayURL === null) {
+  if (!ipfsNodeURL && !ipfsGatewayURL) {
     throw new JsonLdError('IPFS is not configured', 'jsonld.IPFSNotConfigured', {
       code: 'loading document failed',
       url: documentURL
@@ -207,7 +207,7 @@ async function loadFromIPFSNode(url: string, ipfsNodeURL: string): Promise<Remot
     try {
       errorBody = await res.text();
     } catch (e) {
-      /* empty */
+      console.warn(e);
     }
 
     throw new Error(`Error calling IPFS node: [${res.status}] ${res.statusText}\n${errorBody}`);

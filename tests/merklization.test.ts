@@ -26,8 +26,7 @@ import { getJsonLdDocLoader, normalizeIPFSNodeURL } from '../src/loaders/jsonld-
 
 describe('tests merkelization', () => {
   it('multigraph TestEntriesFromRDF', async () => {
-    const documentLoader = getJsonLdDocLoader();
-    const dataset = await RDFDataset.fromDocument(JSON.parse(multigraphDoc2), documentLoader);
+    const dataset = await RDFDataset.fromDocument(JSON.parse(multigraphDoc2));
 
     const entries = await RDFEntry.fromDataSet(dataset, DEFAULT_HASHER);
 
@@ -86,8 +85,7 @@ describe('tests merkelization', () => {
   });
 
   it('TestEntriesFromRDF', async () => {
-    const documentLoader = getJsonLdDocLoader();
-    const dataSet = await RDFDataset.fromDocument(JSON.parse(testDocument), documentLoader);
+    const dataSet = await RDFDataset.fromDocument(JSON.parse(testDocument));
     const entries = await RDFEntry.fromDataSet(dataSet, DEFAULT_HASHER);
     const wantEntries = [
       new RDFEntry(
@@ -368,8 +366,7 @@ describe('tests merkelization', () => {
   });
 
   it('test proof', async () => {
-    const documentLoader = getJsonLdDocLoader();
-    const dataSet = await RDFDataset.fromDocument(JSON.parse(testDocument), documentLoader);
+    const dataSet = await RDFDataset.fromDocument(JSON.parse(testDocument));
     const entries = await RDFEntry.fromDataSet(dataSet, DEFAULT_HASHER);
 
     const mt = new Merkletree(new InMemoryDB(str2Bytes('')), true, 40);
@@ -399,8 +396,7 @@ describe('tests merkelization', () => {
   });
 
   it('TestProofInteger', async () => {
-    const documentLoader = getJsonLdDocLoader();
-    const dataSet = await RDFDataset.fromDocument(JSON.parse(testDocument), documentLoader);
+    const dataSet = await RDFDataset.fromDocument(JSON.parse(testDocument));
     const entries = await RDFEntry.fromDataSet(dataSet, DEFAULT_HASHER);
     const mt = new Merkletree(new InMemoryDB(str2Bytes('')), true, 40);
 
@@ -1052,8 +1048,8 @@ async function pushSchemasToIPFS(ipfsNodeURL: string): Promise<void> {
   const resBody = await res.text();
   const records = resBody
     .split('\n')
-    .filter(l => l.trim().length > 0)
-    .map(l => JSON.parse(l).Hash);
+    .filter((l) => l.trim().length > 0)
+    .map((l) => JSON.parse(l).Hash);
 
   // Check that URLs from ipfsDocument are uploaded to IPFS
   expect(records).toContain('QmdP4MZkESEabRVB322r2xWm7TCi7LueMNWMJawYmSy7hp');
