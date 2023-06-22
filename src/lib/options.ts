@@ -7,15 +7,7 @@ export function getHasher(opts?: Options): Hasher {
 }
 
 export function getDocumentLoader(opts?: Options): LoadDocumentCallback {
-  if (typeof opts === 'undefined' || opts === null) {
-    return getJsonLdDocLoader();
-  }
-
-  if (typeof opts.documentLoader !== 'undefined' && opts.documentLoader !== null) {
-    return opts.documentLoader;
-  }
-
   const ipfsNodeURL = opts?.ipfsNodeURL ?? null;
   const ipfsGatewayURL = opts?.ipfsGatewayURL ?? null;
-  return getJsonLdDocLoader(ipfsNodeURL, ipfsGatewayURL);
+  return opts?.documentLoader ? opts?.documentLoader : getJsonLdDocLoader(ipfsNodeURL, ipfsGatewayURL);
 }
