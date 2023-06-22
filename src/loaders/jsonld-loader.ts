@@ -141,9 +141,100 @@ export class JsonLDLoader {
   }
 }
 
-async function _fetch({ url }) {
+const ipfsMethodCat = 'cat';
+
+export function normalizeIPFSNodeURL(ipfsNodeURL: string, apiMethod: string): string {
+  const apiSuffix = '/api/v0';
+
+  while (ipfsNodeURL.endsWith('/')) {
+    ipfsNodeURL = ipfsNodeURL.slice(0, -1);
+  }
+
+  if (!ipfsNodeURL.endsWith(apiSuffix)) {
+    ipfsNodeURL += apiSuffix;
+  }
+
+  return ipfsNodeURL + '/' + apiMethod;
+}
+
+function trimRightSlash(url: string): string {
+  while (url.endsWith('/')) {
+    url = url.slice(0, -1);
+  }
+  return url;
+}
+
+function trimLeftSlash(url: string): string {
+  while (url.startsWith('/')) {
+    url = url.slice(1);
+  }
+  return url;
+}
+
+function buildIpfsGatewayURL(ipfsGatewayURL: string, documentURL: string): string {
+  return trimRightSlash(ipfsGatewayURL) + '/ipfs/' + trimLeftSlash(documentURL);
+}
+
+async function loadIPFS(
+  url: string,
+  ipfsNodeURL: string,
+  ipfsGatewayURL: string
+): Promise<RemoteDocument> {
+  const documentURL = ipfsURLPrefix + url;
+
+  if (!ipfsNodeURL && !ipfsGatewayURL) {
+    throw new JsonLdError('IPFS is not configured', 'jsonld.IPFSNotConfigured', {
+      code: 'loading document failed',
+      url: documentURL
+    });
+  }
+
+  if (ipfsNodeURL !== null) {
+    return await loadFromIPFSNode(url, ipfsNodeURL);
+  } else {
+    return await loadFromIPFSGateway(url, ipfsGatewayURL);
+  }
+}
+
+async function loadFromIPFSNode(url: string, ipfsNodeURL: string): Promise<RemoteDocument> {
+  const catRequestURL = new URL(normalizeIPFSNodeURL(ipfsNodeURL, ipfsMethodCat));
+  catRequestURL.searchParams.append('arg', url);
+
+  const { res, body } = await _fetch({ url: catRequestURL, method: 'POST' });
+
+  if (res.status != 200) {
+    let errorBody: string;
+    try {
+      errorBody = await res.text();
+    } catch (e) {
+      console.warn(e);
+    }
+
+    throw new Error(`Error calling IPFS node: [${res.status}] ${res.statusText}\n${errorBody}`);
+  }
+
+  return {
+    contextUrl: null,
+    document: body || null,
+    documentUrl: ipfsURLPrefix + url
+  };
+}
+
+async function loadFromIPFSGateway(url: string, ipfsGatewayURL: string): Promise<RemoteDocument> {
+  const loader = new JsonLDLoader();
+  const document = await loader.loadDocument(buildIpfsGatewayURL(ipfsGatewayURL, url), []);
+  document.contextUrl = null;
+  document.documentUrl = ipfsURLPrefix + url;
+  return document;
+}
+
+async function _fetch({ url, method }: { url: string | URL; method?: string }) {
+  const options = {};
+  if (typeof method !== 'undefined') {
+    options['method'] = method;
+  }
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, options);
     if (res.status >= 300 && res.status < 400) {
       return { res, body: null };
     }
@@ -166,13 +257,21 @@ async function _fetch({ url }) {
   }
 }
 
-export const getJsonLdDocLoader = () => {
-  // eslint-disable-next-line  @typescript-eslint/no-unused-vars
-  const docLoader = (url: Url, callback: (err: Error, remoteDoc: RemoteDocument) => void) => {
-    const loader = new JsonLDLoader();
-    return loader.loadDocument(url) as Promise<RemoteDocument>;
-  };
-  return docLoader;
-};
+export type LoadDocumentCallback = (url: Url) => Promise<RemoteDocument>;
 
-export const jsonLdDocLoader = getJsonLdDocLoader();
+const ipfsURLPrefix = 'ipfs://';
+
+export const getJsonLdDocLoader = (
+  ipfsNodeURL: string = null,
+  ipfsGatewayURL: string = null
+): LoadDocumentCallback => {
+  return async (url: Url): Promise<RemoteDocument> => {
+    if (url.startsWith(ipfsURLPrefix)) {
+      const ipfsURL: string = url.slice(ipfsURLPrefix.length);
+      return await loadIPFS(ipfsURL, ipfsNodeURL, ipfsGatewayURL);
+    }
+
+    const loader = new JsonLDLoader();
+    return loader.loadDocument(url, []);
+  };
+};

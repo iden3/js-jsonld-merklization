@@ -1,4 +1,4 @@
-import { Hasher, Value } from './types/types';
+import { Hasher, Value, Options } from './types/types';
 import { compact, NodeObject } from 'jsonld';
 import { Merkletree, Hash, Proof } from '@iden3/js-merkletree';
 import { RDFDataset } from './rdf-dataset';
@@ -7,8 +7,8 @@ import { addEntriesToMerkleTree, getMerkleTreeInitParam } from './merkle-tree';
 import { RDFEntry } from './rdf-entry';
 import { Path } from './path';
 import { MtValue } from './mt-value';
-import { jsonLdDocLoader } from '../loaders/jsonld-loader';
 import { convertAnyToString, convertStringToXsdValue } from './utils';
+import { getDocumentLoader, getHasher } from './options';
 
 export class Merklizer {
   constructor(
@@ -113,16 +113,12 @@ export class Merklizer {
     return obj[idx];
   }
 
-  static async merklizeJSONLD(
-    docStr: string,
-    opts?: {
-      hasher: Hasher;
-    }
-  ): Promise<Merklizer> {
-    const hasher = opts?.hasher ?? DEFAULT_HASHER;
+  static async merklizeJSONLD(docStr: string, opts?: Options): Promise<Merklizer> {
+    const hasher = getHasher(opts);
     const mz = new Merklizer(docStr, null, hasher);
     const doc = JSON.parse(mz.srcDoc);
-    const dataset = await RDFDataset.fromDocument(doc);
+    const documentLoader = getDocumentLoader(opts);
+    const dataset = await RDFDataset.fromDocument(doc, documentLoader);
     const entries = await RDFEntry.fromDataSet(dataset, hasher);
 
     for (const e of entries) {
@@ -135,7 +131,7 @@ export class Merklizer {
     mz.compacted = await compact(
       doc,
       {},
-      { documentLoader: jsonLdDocLoader, base: null, compactArrays: true, compactToRelative: true }
+      { documentLoader, base: null, compactArrays: true, compactToRelative: true }
     );
 
     return mz;

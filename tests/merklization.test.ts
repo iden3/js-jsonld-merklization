@@ -1,3 +1,4 @@
+import { readFile } from 'fs/promises';
 import { Merklizer } from './../src/lib/merklizer';
 import { MerklizationConstants } from './../src/lib/constants';
 import { RDFEntry } from './../src/lib/rdf-entry';
@@ -11,15 +12,17 @@ import {
   testDocument,
   docWithDouble,
   vp,
+  ipfsDocument
 } from './data';
 import { Merkletree, verifyProof, InMemoryDB, str2Bytes } from '@iden3/js-merkletree';
 import { DEFAULT_HASHER } from '../src/lib/poseidon';
 import { Path } from '../src/lib/path';
 import { MtValue } from '../src/lib/mt-value';
-import { Temporal } from '@js-temporal/polyfill'
+import { Temporal } from '@js-temporal/polyfill';
 import { TestHasher } from './hasher';
 import { poseidon } from '@iden3/js-crypto';
 import { TextEncoder } from 'util';
+import { getJsonLdDocLoader, normalizeIPFSNodeURL } from '../src/loaders/jsonld-loader';
 
 describe('tests merkelization', () => {
   it('multigraph TestEntriesFromRDF', async () => {
@@ -700,102 +703,102 @@ describe('tests merkelization', () => {
   it('TestHashValue', async () => {
     const testCases = [
       {
-        name:     "xsd:integer",
-        datatype: "http://www.w3.org/2001/XMLSchema#integer",
-        value:    1,
-        wantHash: "1",
+        name: 'xsd:integer',
+        datatype: 'http://www.w3.org/2001/XMLSchema#integer',
+        value: 1,
+        wantHash: '1'
       },
       {
-        name:     "xsd:boolean true",
-        datatype: "http://www.w3.org/2001/XMLSchema#boolean",
-        value:    true,
-        wantHash: "18586133768512220936620570745912940619677854269274689475585506675881198879027",
+        name: 'xsd:boolean true',
+        datatype: 'http://www.w3.org/2001/XMLSchema#boolean',
+        value: true,
+        wantHash: '18586133768512220936620570745912940619677854269274689475585506675881198879027'
       },
       {
-        name:     "xsd:boolean false",
-        datatype: "http://www.w3.org/2001/XMLSchema#boolean",
-        value:    false,
-        wantHash: "19014214495641488759237505126948346942972912379615652741039992445865937985820",
+        name: 'xsd:boolean false',
+        datatype: 'http://www.w3.org/2001/XMLSchema#boolean',
+        value: false,
+        wantHash: '19014214495641488759237505126948346942972912379615652741039992445865937985820'
       },
       {
-        name:     "xsd:boolean 1",
-        datatype: "http://www.w3.org/2001/XMLSchema#boolean",
-        value:    "1",
-        wantHash: "18586133768512220936620570745912940619677854269274689475585506675881198879027",
+        name: 'xsd:boolean 1',
+        datatype: 'http://www.w3.org/2001/XMLSchema#boolean',
+        value: '1',
+        wantHash: '18586133768512220936620570745912940619677854269274689475585506675881198879027'
       },
       {
-        name:     "xsd:boolean 0",
-        datatype: "http://www.w3.org/2001/XMLSchema#boolean",
-        value:    "0",
-        wantHash: "19014214495641488759237505126948346942972912379615652741039992445865937985820",
+        name: 'xsd:boolean 0',
+        datatype: 'http://www.w3.org/2001/XMLSchema#boolean',
+        value: '0',
+        wantHash: '19014214495641488759237505126948346942972912379615652741039992445865937985820'
       },
       {
-        name:     "xsd:dateTime > January 1st, 1970 RFC3339Nano",
-        datatype: "http://www.w3.org/2001/XMLSchema#dateTime",
-        value:    "2019-01-01T00:00:00Z",
-        wantHash: "1546300800000000000",
+        name: 'xsd:dateTime > January 1st, 1970 RFC3339Nano',
+        datatype: 'http://www.w3.org/2001/XMLSchema#dateTime',
+        value: '2019-01-01T00:00:00Z',
+        wantHash: '1546300800000000000'
       },
       {
-        name:     "xsd:dateTime < January 1st, 1970 RFC3339Nano",
-        datatype: "http://www.w3.org/2001/XMLSchema#dateTime",
-        value:    "1960-02-20T11:20:33Z",
-        wantHash: "21888242871839275222246405745257275088548364400416034343697892928208808495617",
+        name: 'xsd:dateTime < January 1st, 1970 RFC3339Nano',
+        datatype: 'http://www.w3.org/2001/XMLSchema#dateTime',
+        value: '1960-02-20T11:20:33Z',
+        wantHash: '21888242871839275222246405745257275088548364400416034343697892928208808495617'
       },
       {
-        name:     "xsd:dateTime YYYY-MM-DD go format (2006-01-02)",
-        datatype: "http://www.w3.org/2001/XMLSchema#dateTime",
-        value:    "1997-04-16",
-        wantHash: "861148800000000000",
+        name: 'xsd:dateTime YYYY-MM-DD go format (2006-01-02)',
+        datatype: 'http://www.w3.org/2001/XMLSchema#dateTime',
+        value: '1997-04-16',
+        wantHash: '861148800000000000'
       },
       {
-        name:     "xsd:string",
-        datatype: "http://www.w3.org/2001/XMLSchema#string",
-        value:    "SSI Consultant",
-        wantHash: "957410455271905675920624030785024750144198809104092676617070098470852489834",
+        name: 'xsd:string',
+        datatype: 'http://www.w3.org/2001/XMLSchema#string',
+        value: 'SSI Consultant',
+        wantHash: '957410455271905675920624030785024750144198809104092676617070098470852489834'
       },
       {
-        name:     "xsd:double should be processed as string",
-        datatype: "http://www.w3.org/2001/XMLSchema#double",
-        value:    100000.01,
-        wantHash: "7858939477831965477428998013961435925262790627337131132863073454519451718017",
+        name: 'xsd:double should be processed as string',
+        datatype: 'http://www.w3.org/2001/XMLSchema#double',
+        value: 100000.01,
+        wantHash: '7858939477831965477428998013961435925262790627337131132863073454519451718017'
       },
       {
-        name:     "xsd:double in our case will be processed as string, since rules are not defined",
-        datatype: "http://www.w3.org/2001/XMLSchema#double",
-        value:    "100000.01",
-        wantHash: "7858939477831965477428998013961435925262790627337131132863073454519451718017",
+        name: 'xsd:double in our case will be processed as string, since rules are not defined',
+        datatype: 'http://www.w3.org/2001/XMLSchema#double',
+        value: '100000.01',
+        wantHash: '7858939477831965477428998013961435925262790627337131132863073454519451718017'
       },
       {
-        name:     "xsd:integer should be correctly parsed as integer",
-        datatype: "http://www.w3.org/2001/XMLSchema#integer",
-        value:     19960424,
-        wantHash: "19960424",
+        name: 'xsd:integer should be correctly parsed as integer',
+        datatype: 'http://www.w3.org/2001/XMLSchema#integer',
+        value: 19960424,
+        wantHash: '19960424'
       },
       {
-        name:     "number with double xsd type should be correctly parsed as string",
-        datatype: "http://www.w3.org/2001/XMLSchema#double",
-        value:     19960424,
+        name: 'number with double xsd type should be correctly parsed as string',
+        datatype: 'http://www.w3.org/2001/XMLSchema#double',
+        value: 19960424,
         // hash of "1.9960424E7"
-        wantHash: "14659279547748882579324236944917252187779632081828519649786308744097131655268",
+        wantHash: '14659279547748882579324236944917252187779632081828519649786308744097131655268'
       },
       {
-        name:     "number with double xsd type should be correctly parsed as string",
-        datatype: "http://www.w3.org/2001/XMLSchema#double",
-        value:    19960424,
-        wantHash: strHash("1.9960424E7"),
+        name: 'number with double xsd type should be correctly parsed as string',
+        datatype: 'http://www.w3.org/2001/XMLSchema#double',
+        value: 19960424,
+        wantHash: strHash('1.9960424E7')
       },
-   
+
       {
-        name:     "near to max int64 that may be hashed",
-        datatype: "http://www.w3.org/2001/XMLSchema#double",
-        value:    1234567890123456,
-        wantHash: strHash("1.234567890123456E15"),
+        name: 'near to max int64 that may be hashed',
+        datatype: 'http://www.w3.org/2001/XMLSchema#double',
+        value: 1234567890123456,
+        wantHash: strHash('1.234567890123456E15')
       },
       {
-        name:     "xsd:dateTime in the distant future",
-        datatype: "http://www.w3.org/2001/XMLSchema#dateTime",
-        value:    "4000-01-01T00:00:00Z",
-        wantHash: "64060588800000000000",
+        name: 'xsd:dateTime in the distant future',
+        datatype: 'http://www.w3.org/2001/XMLSchema#dateTime',
+        value: '4000-01-01T00:00:00Z',
+        wantHash: '64060588800000000000'
       }
     ];
 
@@ -804,7 +807,7 @@ describe('tests merkelization', () => {
       expect(result.toString()).toEqual(tc.wantHash.toString());
     }
   });
- 
+
   it('TestHashValueError', async () => {
     const testCases = [
       {
@@ -826,7 +829,7 @@ describe('tests merkelization', () => {
         pathToField: 'KYCEmployee.hireDate',
         datatype: 'http://www.w3.org/2001/XMLSchema#dateTime',
         value: '01-01-2019',
-        wantErr: "invalid ISO 8601 string: 01-01-2019"
+        wantErr: 'invalid ISO 8601 string: 01-01-2019'
       },
       {
         name: 'unknown datatype',
@@ -948,30 +951,30 @@ describe('tests merkelization', () => {
   it('roots', async () => {
     const testCases = [
       {
-        name:     "testDocument",
-        doc:      testDocument,
-        wantRoot: "19309047812100087948241250053335720576191969395309912987389452441269932261840",
+        name: 'testDocument',
+        doc: testDocument,
+        wantRoot: '19309047812100087948241250053335720576191969395309912987389452441269932261840'
       },
       {
-        name:     "doc1",
-        doc:      doc1,
-        wantRoot: "14254126130605812747518773069191924472136034086074656038330159471066163388520",
+        name: 'doc1',
+        doc: doc1,
+        wantRoot: '14254126130605812747518773069191924472136034086074656038330159471066163388520'
       },
       {
-        name:     "multigraphDoc2",
-        doc:      multigraphDoc2,
-        wantRoot: "11252837464697009054213269776498742372491493851016505396927630745348533726396",
+        name: 'multigraphDoc2',
+        doc: multigraphDoc2,
+        wantRoot: '11252837464697009054213269776498742372491493851016505396927630745348533726396'
       },
       {
-        name:     "vp",
-        doc:      vp,
-        wantRoot: "438107724194342316220762948074408676879297288866380839121721382436955105096",
+        name: 'vp',
+        doc: vp,
+        wantRoot: '438107724194342316220762948074408676879297288866380839121721382436955105096'
       },
       {
-        name:     "docWithFloat",
-        doc:      docWithDouble,
-        wantRoot: "16807151140873243281836480228059250043791482248223749610516824774207131149216",
-      },
+        name: 'docWithFloat',
+        doc: docWithDouble,
+        wantRoot: '16807151140873243281836480228059250043791482248223749610516824774207131149216'
+      }
     ];
 
     for (const tc of testCases) {
@@ -982,6 +985,77 @@ describe('tests merkelization', () => {
   });
 });
 
-function strHash(str:string): string {
-  return poseidon.hashBytes(new TextEncoder().encode(str)).toString()
- }
+describe('merklize document with ipfs context', () => {
+  // node --experimental-vm-modules node_modules/jest/bin/jest.js -t 'set kubo client' tests/merklization.test.ts
+
+  const ipfsNodeURL = process.env.IPFS_URL ?? null;
+  if (ipfsNodeURL === null) {
+    console.warn('IPFS_URL is not set, skipping IPFS Node test');
+    return;
+  }
+
+  beforeAll(async () => {
+    await pushSchemasToIPFS(ipfsNodeURL);
+  });
+
+  it('ipfsNodeURL is set', async () => {
+    const mz: Merklizer = await Merklizer.merklizeJSONLD(ipfsDocument, {
+      ipfsNodeURL: ipfsNodeURL
+    });
+    expect((await mz.root()).bigInt().toString()).toEqual(
+      '19309047812100087948241250053335720576191969395309912987389452441269932261840'
+    );
+  });
+
+  it('ipfsGatewayURL is set', async () => {
+    const mz: Merklizer = await Merklizer.merklizeJSONLD(ipfsDocument, {
+      ipfsGatewayURL: 'http://ipfs.io'
+    });
+    expect((await mz.root()).bigInt().toString()).toEqual(
+      '19309047812100087948241250053335720576191969395309912987389452441269932261840'
+    );
+  });
+
+  it('IPFS is not configured', async () => {
+    await expect(Merklizer.merklizeJSONLD(ipfsDocument)).rejects.toThrow(
+      'Dereferencing a URL did not result in a valid JSON-LD object'
+    );
+  });
+});
+
+async function pushSchemasToIPFS(ipfsNodeURL: string): Promise<void> {
+  const citizenshipData = await readFile('tests/testdata/citizenship-v1.jsonld');
+  const bbsData = await readFile('tests/testdata/dir1/dir2/bbs-v2.jsonld');
+
+  const formData = new FormData();
+  formData.append(
+    'file',
+    new Blob([citizenshipData], { type: 'application/octet-stream' }),
+    'citizenship-v1.jsonld'
+  );
+  formData.append(
+    'file',
+    new Blob([bbsData], { type: 'application/octet-stream' }),
+    'dir1/dir2/bbs-v2.jsonld'
+  );
+
+  const addURL = normalizeIPFSNodeURL(ipfsNodeURL, 'add');
+  const res = await fetch(addURL, {
+    method: 'POST',
+    body: formData
+  });
+
+  const resBody = await res.text();
+  const records = resBody
+    .split('\n')
+    .filter((l) => l.trim().length > 0)
+    .map((l) => JSON.parse(l).Hash);
+
+  // Check that URLs from ipfsDocument are uploaded to IPFS
+  expect(records).toContain('QmdP4MZkESEabRVB322r2xWm7TCi7LueMNWMJawYmSy7hp');
+  expect(records).toContain('Qmbp4kwoHULnmK71abrxdksjPH5sAjxSAXU5PEp2XRMFNw');
+}
+
+function strHash(str: string): string {
+  return poseidon.hashBytes(new TextEncoder().encode(str)).toString();
+}

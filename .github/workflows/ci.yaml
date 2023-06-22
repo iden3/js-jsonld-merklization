@@ -27,10 +27,12 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
 
+      # if tests fail, this step may show what dependencies are changed.
       - if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
         name: List the state of node modules
         continue-on-error: true
         run: npm list
+
       - name: Install modules
         run: npm ci
 

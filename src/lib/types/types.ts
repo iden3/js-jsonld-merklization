@@ -1,4 +1,12 @@
 import { Temporal } from '@js-temporal/polyfill';
+import { LoadDocumentCallback } from '../../loaders/jsonld-loader';
+
+export interface Options {
+  hasher?: Hasher;
+  ipfsNodeURL?: string;
+  ipfsGatewayURL?: string;
+  documentLoader?: LoadDocumentCallback;
+}
 
 export interface Hasher {
   hash: (inp: bigint[]) => Promise<bigint>;

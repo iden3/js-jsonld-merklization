@@ -1,11 +1,12 @@
 import { MerklizationConstants } from './constants';
 import { Quad, Parser } from 'n3';
 import { canonize, JsonLdDocument } from 'jsonld';
-import { jsonLdDocLoader } from '../loaders/jsonld-loader';
+import { LoadDocumentCallback } from '../loaders/jsonld-loader';
 import { DatasetIdx } from './dataset-idx';
 import { getGraphName } from './utils';
 import { RefTp } from './ref-tp';
 import { NodeType } from './types/types';
+import { getDocumentLoader } from "./options";
 
 export class RDFDataset {
   constructor(public readonly graphs: Map<string, Quad[]> = new Map()) {}
@@ -27,10 +28,13 @@ export class RDFDataset {
     }
   };
 
-  static async fromDocument(doc: JsonLdDocument): Promise<RDFDataset> {
+  static async fromDocument(
+    doc: JsonLdDocument,
+    documentLoader: LoadDocumentCallback = getDocumentLoader()
+  ): Promise<RDFDataset> {
     const normalizedData = await canonize(doc, {
       format: MerklizationConstants.QUADS_FORMAT,
-      documentLoader: jsonLdDocLoader
+      documentLoader
     });
     const parser = new Parser({ format: MerklizationConstants.QUADS_FORMAT });
 
