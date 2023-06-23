@@ -6,7 +6,7 @@ import { DatasetIdx } from './dataset-idx';
 import { getGraphName } from './utils';
 import { RefTp } from './ref-tp';
 import { NodeType } from './types/types';
-import { getDocumentLoader } from "./options";
+import { getDocumentLoader } from './options';
 
 export class RDFDataset {
   constructor(public readonly graphs: Map<string, Quad[]> = new Map()) {}

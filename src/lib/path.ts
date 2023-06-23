@@ -302,3 +302,33 @@ function documentLoaderAdapter(docLoader: LoadDocumentCallback): IDocumentLoader
     }
   };
 }
+
+// TypeIDFromContext returns @id attribute for type from JSON-LD context
+export const getTypeIDFromContext = async (
+  ctxStr: string,
+  typeName: string,
+  opts?: Options
+): Promise<string> => {
+  const ctxObj = JSON.parse(ctxStr);
+
+  const documentLoader = documentLoaderAdapter(getDocumentLoader(opts));
+  const ctxParser = new ContextParser({ documentLoader });
+  const parsedCtx = await ctxParser.parse(ctxObj['@context']);
+  const typeDef = parsedCtx.getContextRaw()[typeName];
+
+  if (!typeDef) {
+    throw new Error(`looks like ${typeName} is not a type`);
+  }
+
+  const typeID = typeDef['@id'];
+  if (!typeID) {
+    throw new Error(`@id attribute is not found for type ${typeName}`);
+  }
+
+  // const typeIDStr = typeID.(string)
+  if (typeof typeID !== 'string') {
+    throw new Error(`@id attribute is not a string for type ${typeName}`);
+  }
+
+  return typeID;
+};
