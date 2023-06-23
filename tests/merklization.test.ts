@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { readFile } from 'fs/promises';
 import { Merklizer } from './../src/lib/merklizer';
 import { MerklizationConstants } from './../src/lib/constants';
@@ -12,17 +13,18 @@ import {
   testDocument,
   docWithDouble,
   vp,
-  ipfsDocument
+  ipfsDocument,
+  kycV102
 } from './data';
 import { Merkletree, verifyProof, InMemoryDB, str2Bytes } from '@iden3/js-merkletree';
 import { DEFAULT_HASHER } from '../src/lib/poseidon';
-import { Path } from '../src/lib/path';
+import { Path, getTypeIDFromContext } from '../src/lib/path';
 import { MtValue } from '../src/lib/mt-value';
 import { Temporal } from '@js-temporal/polyfill';
 import { TestHasher } from './hasher';
 import { poseidon } from '@iden3/js-crypto';
 import { TextEncoder } from 'util';
-import { getJsonLdDocLoader, normalizeIPFSNodeURL } from '../src/loaders/jsonld-loader';
+import { normalizeIPFSNodeURL } from '../src/loaders/jsonld-loader';
 
 describe('tests merkelization', () => {
   it('multigraph TestEntriesFromRDF', async () => {
@@ -416,6 +418,27 @@ describe('tests merkelization', () => {
     const ok = await verifyProof(await mt.root(), p.proof, k, v);
 
     expect(ok).toBe(true);
+  });
+
+  it('TestTypeIDFromContext', async () => {
+    const testCases = [
+      {
+        data: kycschema_jsonld,
+        typeName: 'KYCCountryOfResidenceCredential',
+        expectedType:
+          'https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v4.json-ld#KYCCountryOfResidenceCredential'
+      },
+      {
+        data: kycV102,
+        typeName: 'KYCCountryOfResidenceCredential',
+        expectedType: 'urn:uuid:a81d4fae-7dec-11d0-a765-00a0c91e6bf0'
+      }
+    ];
+
+    for (const testCase of testCases) {
+      const typeId = await getTypeIDFromContext(testCase.data, testCase.typeName);
+      expect(typeId).toEqual(testCase.expectedType);
+    }
   });
 
   describe('TestMerklizer_Proof', () => {

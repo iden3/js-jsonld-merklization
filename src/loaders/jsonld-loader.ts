@@ -207,6 +207,7 @@ async function loadFromIPFSNode(url: string, ipfsNodeURL: string): Promise<Remot
     try {
       errorBody = await res.text();
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.warn(e);
     }
 

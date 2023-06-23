@@ -9,5 +9,5 @@ export function getHasher(opts?: Options): Hasher {
 export function getDocumentLoader(opts?: Options): LoadDocumentCallback {
   const ipfsNodeURL = opts?.ipfsNodeURL ?? null;
   const ipfsGatewayURL = opts?.ipfsGatewayURL ?? null;
-  return opts?.documentLoader ? opts?.documentLoader : getJsonLdDocLoader(ipfsNodeURL, ipfsGatewayURL);
+  return opts?.documentLoader ?? getJsonLdDocLoader(ipfsNodeURL, ipfsGatewayURL);
 }
