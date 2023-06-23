@@ -18,7 +18,7 @@ import {
 } from './data';
 import { Merkletree, verifyProof, InMemoryDB, str2Bytes } from '@iden3/js-merkletree';
 import { DEFAULT_HASHER } from '../src/lib/poseidon';
-import { Path, getTypeIDFromContext } from '../src/lib/path';
+import { Path } from '../src/lib/path';
 import { MtValue } from '../src/lib/mt-value';
 import { Temporal } from '@js-temporal/polyfill';
 import { TestHasher } from './hasher';
@@ -436,7 +436,7 @@ describe('tests merkelization', () => {
     ];
 
     for (const testCase of testCases) {
-      const typeId = await getTypeIDFromContext(testCase.data, testCase.typeName);
+      const typeId = await Path.getTypeIDFromContext(testCase.data, testCase.typeName);
       expect(typeId).toEqual(testCase.expectedType);
     }
   });
