@@ -258,14 +258,14 @@ async function _fetch({ url, method }: { url: string | URL; method?: string }) {
   }
 }
 
-export type LoadDocumentCallback = (url: Url) => Promise<RemoteDocument>;
+export type DocumentLoader = (url: Url) => Promise<RemoteDocument>;
 
 const ipfsURLPrefix = 'ipfs://';
 
 export const getJsonLdDocLoader = (
   ipfsNodeURL: string = null,
   ipfsGatewayURL: string = null
-): LoadDocumentCallback => {
+): DocumentLoader => {
   return async (url: Url): Promise<RemoteDocument> => {
     if (url.startsWith(ipfsURLPrefix)) {
       const ipfsURL: string = url.slice(ipfsURLPrefix.length);
