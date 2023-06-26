@@ -6,7 +6,7 @@ import { DEFAULT_HASHER } from './poseidon';
 import { byteEncoder, sortArr } from './utils';
 import { getDocumentLoader, getHasher } from './options';
 import { IDocumentLoader } from 'jsonld-context-parser/lib/IDocumentLoader';
-import { LoadDocumentCallback } from '../loaders/jsonld-loader';
+import { DocumentLoader } from '../loaders/jsonld-loader';
 import { IJsonLdContext } from 'jsonld-context-parser/lib/JsonLdContext';
 
 export class Path {
@@ -323,7 +323,7 @@ export class Path {
   }
 }
 
-function documentLoaderAdapter(docLoader: LoadDocumentCallback): IDocumentLoader {
+function documentLoaderAdapter(docLoader: DocumentLoader): IDocumentLoader {
   return {
     async load(url: string): Promise<IJsonLdContext> {
       const doc = await docLoader(url);

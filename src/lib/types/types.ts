@@ -1,11 +1,11 @@
 import { Temporal } from '@js-temporal/polyfill';
-import { LoadDocumentCallback } from '../../loaders/jsonld-loader';
+import { DocumentLoader } from '../../loaders/jsonld-loader';
 
 export interface Options {
   hasher?: Hasher;
   ipfsNodeURL?: string;
   ipfsGatewayURL?: string;
-  documentLoader?: LoadDocumentCallback;
+  documentLoader?: DocumentLoader;
 }
 
 export interface Hasher {
