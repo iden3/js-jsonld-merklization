@@ -5,3 +5,4 @@ export { Path } from './lib/path';
 export { Hasher, Options } from './lib/types/types';
 export { MerklizationConstants } from './lib/constants';
 export { getDocumentLoader } from './lib/options';
+export { DocumentLoader } from './loaders/jsonld-loader';
