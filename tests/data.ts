@@ -489,7 +489,8 @@ export const docWithDouble = `{
     "@type": "http://www.w3.org/2001/XMLSchema#double",
     "@value": "123"
   }
-}`
+}`;
+
 export const vp = `{
   "verifiableCredential": {
     "@context": [
@@ -509,4 +510,132 @@ export const vp = `{
   "@context": [
     "https://www.w3.org/2018/credentials/v1"
   ]
-}`
+}`;
+
+export const ipfsDocument = `{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "ipfs://QmdP4MZkESEabRVB322r2xWm7TCi7LueMNWMJawYmSy7hp",
+	  "ipfs://Qmbp4kwoHULnmK71abrxdksjPH5sAjxSAXU5PEp2XRMFNw/dir2/bbs-v2.jsonld"
+  ],
+  "id": "https://issuer.oidp.uscis.gov/credentials/83627465",
+  "type": ["VerifiableCredential", "PermanentResidentCard"],
+  "issuer": "did:example:489398593",
+  "identifier": 83627465,
+  "name": "Permanent Resident Card",
+  "description": "Government of Example Permanent Resident Card.",
+  "issuanceDate": "2019-12-03T12:19:52Z",
+  "expirationDate": "2029-12-03T12:19:52Z",
+  "credentialSubject": [
+    {
+      "id": "did:example:b34ca6cd37bbf23",
+      "type": ["PermanentResident", "Person"],
+      "givenName": "JOHN",
+      "familyName": "SMITH",
+      "gender": "Male",
+      "image": "data:image/png;base64,iVBORw0KGgokJggg==",
+      "residentSince": "2015-01-01",
+      "lprCategory": "C09",
+      "lprNumber": "999-999-999",
+      "commuterClassification": "C1",
+      "birthCountry": "Bahamas",
+      "birthDate": "1958-07-17"
+    },
+    {
+      "id": "did:example:b34ca6cd37bbf24",
+      "type": ["PermanentResident", "Person"],
+      "givenName": "JOHN",
+      "familyName": "SMITH",
+      "gender": "Male",
+      "image": "data:image/png;base64,iVBORw0KGgokJggg==",
+      "residentSince": "2015-01-01",
+      "lprCategory": "C09",
+      "lprNumber": "999-999-999",
+      "commuterClassification": "C1",
+      "birthCountry": "Bahamas",
+      "birthDate": "1958-07-18"
+    }
+  ]
+}`;
+
+export const kycV102 = `
+{
+  "@context": [
+    {
+      "@version": 1.1,
+      "@protected": true,
+      "id": "@id",
+      "type": "@type",
+      "KYCAgeCredential": {
+        "@id": "urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+        "@context": {
+          "@version": 1.1,
+          "@protected": true,
+          "id": "@id",
+          "type": "@type",
+          "kyc-vocab": "https://github.com/iden3/claim-schema-vocab/blob/main/credentials/kyc.md#",
+          "xsd": "http://www.w3.org/2001/XMLSchema#",
+          "birthday": {
+            "@id": "kyc-vocab:birthday",
+            "@type": "xsd:integer"
+          },
+          "documentType": {
+            "@id": "kyc-vocab:documentType",
+            "@type": "xsd:integer"
+          }
+        }
+      },
+      "KYCCountryOfResidenceCredential": {
+        "@id": "urn:uuid:a81d4fae-7dec-11d0-a765-00a0c91e6bf0",
+        "@context": {
+          "@version": 1.1,
+          "@protected": true,
+          "id": "@id",
+          "type": "@type",
+          "kyc-vocab": "https://github.com/iden3/claim-schema-vocab/blob/main/credentials/kyc.md#",
+          "xsd": "http://www.w3.org/2001/XMLSchema#",
+          "countryCode": {
+            "@id": "kyc-vocab:countryCode",
+            "@type": "xsd:integer"
+          },
+          "documentType": {
+            "@id": "kyc-vocab:documentType",
+            "@type": "xsd:integer"
+          }
+        }
+      },
+      "KYCEmployee": {
+        "@id": "urn:uuid:b71d4fae-7dec-11d0-a765-00a0c91e6bf1",
+        "@context": {
+          "@version": 1.1,
+          "@protected": true,
+          "id": "@id",
+          "type": "@type",
+          "kyc-vocab": "https://github.com/iden3/claim-schema-vocab/blob/main/credentials/kyc.md#",
+          "xsd": "http://www.w3.org/2001/XMLSchema#",
+          "documentType": {
+            "@id": "kyc-vocab:documentType",
+            "@type": "xsd:integer"
+          },
+          "ZKPexperiance": {
+            "@id": "kyc-vocab:hasZKPexperiance",
+            "@type": "xsd:boolean"
+          },
+          "hireDate": {
+            "@id": "kyc-vocab:hireDate",
+            "@type": "xsd:dateTime"
+          },
+          "position": {
+            "@id": "kyc-vocab:position",
+            "@type": "xsd:string"
+          },
+          "salary": {
+            "@id": "kyc-vocab:salary",
+            "@type": "xsd:double"
+          }
+        }
+      }
+    }
+  ]
+}
+`;
