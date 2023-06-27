@@ -254,7 +254,8 @@ export class Path {
   static getContextPathKey = async (
     docStr: string,
     ctxTyp: string,
-    fieldPath: string
+    fieldPath: string,
+    opts?: Options
   ): Promise<Path> => {
     if (ctxTyp === '') {
       throw MerklizationConstants.ERRORS.CTX_TYP_IS_EMPTY;
@@ -263,8 +264,8 @@ export class Path {
       throw MerklizationConstants.ERRORS.FIELD_PATH_IS_EMPTY;
     }
 
-    const fullPath = await Path.newPathFromCtx(docStr, `${ctxTyp}.${fieldPath}`);
-    const typePath = await Path.newPathFromCtx(docStr, ctxTyp);
+    const fullPath = await Path.newPathFromCtx(docStr, `${ctxTyp}.${fieldPath}`, opts);
+    const typePath = await Path.newPathFromCtx(docStr, ctxTyp, opts);
     return new Path(fullPath.parts.slice(typePath.parts.length));
   };
 
