@@ -1,5 +1,5 @@
 import { MerklizationConstants } from './constants';
-import { Hasher, MerklizerOptions, Parts } from './types/types';
+import { Hasher, Options, Parts } from './types/types';
 import { ContextParser, JsonLdContextNormalized } from 'jsonld-context-parser';
 import { JsonLdDocument } from 'jsonld';
 import { DEFAULT_HASHER } from './poseidon';
@@ -44,7 +44,7 @@ export class Path {
     return h.hash(keyParts);
   }
 
-  async pathFromContext(docStr: string, path: string, opts?: MerklizerOptions): Promise<void> {
+  async pathFromContext(docStr: string, path: string, opts?: Options): Promise<void> {
     const doc = JSON.parse(docStr);
     const context = doc['@context'];
     if (!context) {
@@ -83,7 +83,7 @@ export class Path {
     }
   }
 
-  async typeFromContext(ctxStr: string, path: string, opts?: MerklizerOptions): Promise<string> {
+  async typeFromContext(ctxStr: string, path: string, opts?: Options): Promise<string> {
     const ctxObj = JSON.parse(ctxStr);
 
     const docLoader = documentLoaderAdapter(getDocumentLoader(opts));
@@ -142,7 +142,7 @@ export class Path {
     doc: JsonLdDocument,
     pathParts: string[],
     acceptArray: boolean,
-    opts?: MerklizerOptions
+    opts?: Options
   ): Promise<Parts> {
     if (pathParts.length === 0) {
       return [];
@@ -245,11 +245,7 @@ export class Path {
     return [id, ...moreParts];
   }
 
-  static async newPathFromCtx(
-    docStr: string,
-    path: string,
-    opts?: MerklizerOptions
-  ): Promise<Path> {
+  static async newPathFromCtx(docStr: string, path: string, opts?: Options): Promise<Path> {
     const p = new Path([], getHasher(opts));
     await p.pathFromContext(docStr, path, opts);
     return p;
@@ -259,7 +255,7 @@ export class Path {
     docStr: string,
     ctxTyp: string,
     fieldPath: string,
-    opts?: MerklizerOptions
+    opts?: Options
   ): Promise<Path> => {
     if (ctxTyp === '') {
       throw MerklizationConstants.ERRORS.CTX_TYP_IS_EMPTY;
@@ -277,7 +273,7 @@ export class Path {
     ldCTX: JsonLdContextNormalized | null,
     docStr: string,
     path: string,
-    opts?: MerklizerOptions
+    opts?: Options
   ): Promise<Path> {
     const doc = JSON.parse(docStr);
     const pathParts = path.split('.');
@@ -292,7 +288,7 @@ export class Path {
   static async newTypeFromContext(
     contextStr: string,
     path: string,
-    opts?: MerklizerOptions
+    opts?: Options
   ): Promise<string> {
     const p = new Path([], getHasher(opts));
     return await p.typeFromContext(contextStr, path, opts);
@@ -301,7 +297,7 @@ export class Path {
   static async getTypeIDFromContext(
     ctxStr: string,
     typeName: string,
-    opts?: MerklizerOptions
+    opts?: Options
   ): Promise<string> {
     const ctxObj = JSON.parse(ctxStr);
 

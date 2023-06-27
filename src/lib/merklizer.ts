@@ -1,4 +1,4 @@
-import { Hasher, Value, MerklizerOptions } from './types/types';
+import { Hasher, Value, Options } from './types/types';
 import { compact, NodeObject } from 'jsonld';
 import { Merkletree, Hash, Proof } from '@iden3/js-merkletree';
 import { RDFDataset } from './rdf-dataset';
@@ -113,7 +113,7 @@ export class Merklizer {
     return obj[idx];
   }
 
-  static async merklizeJSONLD(docStr: string, opts?: MerklizerOptions): Promise<Merklizer> {
+  static async merklizeJSONLD(docStr: string, opts?: Options): Promise<Merklizer> {
     const hasher = getHasher(opts);
     const mz = new Merklizer(docStr, null, hasher);
     const doc = JSON.parse(mz.srcDoc);
