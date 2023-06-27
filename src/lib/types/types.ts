@@ -1,7 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill';
 import { DocumentLoader } from '../../loaders/jsonld-loader';
 
-export interface Options {
+export interface MerklizerOptions {
   hasher?: Hasher;
   ipfsNodeURL?: string;
   ipfsGatewayURL?: string;
