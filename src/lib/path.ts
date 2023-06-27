@@ -101,8 +101,7 @@ export class Path {
     return Path.getTypeMapping(parsedCtx, parts[parts.length - 1]);
   }
 
-  // private static getTypeMapping(ctx: ParsedCtx, prop: string): string {
-  private static getTypeMapping(ctx: any, prop: string): string {
+  private static getTypeMapping(ctx: ParsedCtx, prop: string): string {
     let rval = '';
     const defaultT = ctx.mappings.get('@type');
     if (defaultT) {
