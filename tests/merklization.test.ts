@@ -27,7 +27,7 @@ import { poseidon } from '@iden3/js-crypto';
 import { TextEncoder } from 'util';
 import { normalizeIPFSNodeURL } from '../src/loaders/jsonld-loader';
 
-describe.only('tests merkelization', () => {
+describe('tests merkelization', () => {
   it('multigraph TestEntriesFromRDF', async () => {
     const dataset = await RDFDataset.fromDocument(JSON.parse(multigraphDoc2));
 
@@ -612,7 +612,7 @@ describe.only('tests merkelization', () => {
     expect(want).toEqual(result);
   });
 
-  it.only('TestPathFromDocument - path to nested field', async () => {
+  it('TestPathFromDocument - path to nested field', async () => {
     const inp = 'objectField.customNestedField';
     const result = await Path.fromDocument(null, nestedFieldDocument, inp);
 

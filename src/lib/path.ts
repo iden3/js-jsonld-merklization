@@ -1,13 +1,10 @@
 import { MerklizationConstants } from './constants';
 import { Hasher, Options, Parts } from './types/types';
-import { ContextParser, JsonLdContextNormalized } from 'jsonld-context-parser';
+import * as jsonld from 'jsonld';
 import { JsonLdDocument } from 'jsonld';
 import { DEFAULT_HASHER } from './poseidon';
 import { byteEncoder, sortArr } from './utils';
 import { getDocumentLoader, getHasher } from './options';
-import { IDocumentLoader } from 'jsonld-context-parser/lib/IDocumentLoader';
-import { DocumentLoader } from '../loaders/jsonld-loader';
-import { IJsonLdContext } from 'jsonld-context-parser/lib/JsonLdContext';
 
 export class Path {
   constructor(public parts: Parts = [], public hasher: Hasher = DEFAULT_HASHER) {}
@@ -46,13 +43,12 @@ export class Path {
 
   async pathFromContext(docStr: string, path: string, opts?: Options): Promise<void> {
     const doc = JSON.parse(docStr);
-    const context = doc['@context'];
-    if (!context) {
+    if (!doc['@context']) {
       throw MerklizationConstants.ERRORS.CONTEXT_NOT_DEFINED;
     }
-    const docLoader = documentLoaderAdapter(getDocumentLoader(opts));
-    const ctxParser = new ContextParser({ documentLoader: docLoader });
-    let parsedCtx = await ctxParser.parse(doc['@context']);
+    const jsonldOpts = { documentLoader: getDocumentLoader(opts)}
+    const emptyCtx = await jsonld.processContext(null, null, jsonldOpts);
+    let parsedCtx = await jsonld.processContext(emptyCtx, doc, jsonldOpts);
 
     const parts = path.split('.');
 
@@ -61,10 +57,7 @@ export class Path {
       if (MerklizationConstants.DIGITS_ONLY_REGEX.test(p)) {
         this.parts.push(parseInt(p));
       } else {
-        if (!parsedCtx) {
-          throw MerklizationConstants.ERRORS.PARSED_CONTEXT_IS_NULL;
-        }
-        const m = parsedCtx.getContextRaw()[p];
+        const m = parsedCtx.mappings.get(p);
         if (typeof m !== 'object') {
           throw MerklizationConstants.ERRORS.TERM_IS_NOT_DEFINED;
         }
@@ -76,7 +69,7 @@ export class Path {
 
         const nextCtx = m['@context'];
         if (nextCtx) {
-          parsedCtx = await ctxParser.parse(nextCtx);
+          parsedCtx = await jsonld.processContext(parsedCtx, m, jsonldOpts);
         }
         this.parts.push(id);
       }
@@ -86,45 +79,36 @@ export class Path {
   async typeFromContext(ctxStr: string, path: string, opts?: Options): Promise<string> {
     const ctxObj = JSON.parse(ctxStr);
 
-    const docLoader = documentLoaderAdapter(getDocumentLoader(opts));
-    const ctxParser = new ContextParser({ documentLoader: docLoader });
-    let parsedCtx = await ctxParser.parse(ctxObj['@context']);
+    if (!('@context' in ctxObj)) {
+      throw MerklizationConstants.ERRORS.PARSED_CONTEXT_IS_NULL;
+    }
+
+    const jsonldOpts = { documentLoader: getDocumentLoader(opts)}
+    const emptyCtx = await jsonld.processContext(null, null, jsonldOpts);
+    let parsedCtx = await jsonld.processContext(emptyCtx, ctxObj, jsonldOpts);
 
     const parts = path.split('.');
 
     for (const i in parts) {
       const p = parts[i];
-
-      if (!parsedCtx) {
-        throw MerklizationConstants.ERRORS.PARSED_CONTEXT_IS_NULL;
+      const expP = expandType(parsedCtx, p)
+      if (expP.hasContext) {
+        parsedCtx = await jsonld.processContext(parsedCtx, expP.typeDef, jsonldOpts);
       }
-      const m = parsedCtx.getContextRaw()[p];
-      if (typeof m !== 'object') {
-        throw MerklizationConstants.ERRORS.TERM_IS_NOT_DEFINED;
-      }
-
-      const id = m['@id'];
-      if (!id) {
-        throw MerklizationConstants.ERRORS.NO_ID_ATTR;
-      }
-
-      const nextCtx = m['@context'];
-      if (nextCtx) {
-        parsedCtx = await ctxParser.parse(nextCtx);
-      }
-      this.parts.push(id);
+      this.parts.push(expP['@id']);
     }
 
     return Path.getTypeMapping(parsedCtx, parts[parts.length - 1]);
   }
 
-  private static getTypeMapping(ctx: JsonLdContextNormalized, prop: string): string {
+  // private static getTypeMapping(ctx: ParsedCtx, prop: string): string {
+  private static getTypeMapping(ctx: any, prop: string): string {
     let rval = '';
-    const defaultT = ctx.getContextRaw()['@type'];
+    const defaultT = ctx.mappings.get('@type');
     if (defaultT) {
       rval = defaultT as string;
     }
-    const propDef = ctx.getContextRaw()[prop];
+    const propDef = ctx.mappings.get(prop);
     if (propDef && propDef['@type']) {
       rval = propDef['@type'] as string;
     }
@@ -138,7 +122,7 @@ export class Path {
   };
 
   private static async pathFromDocument(
-    ldCTX: JsonLdContextNormalized | null,
+    ldCTX: any | null,
     doc: JsonLdDocument,
     pathParts: string[],
     acceptArray: boolean,
@@ -150,9 +134,7 @@ export class Path {
 
     const term = pathParts[0];
     const newPathParts = pathParts.slice(1);
-
-    const docLoader = documentLoaderAdapter(getDocumentLoader(opts));
-    const ctxParser = new ContextParser({ documentLoader: docLoader });
+    const jsonldOpts = { documentLoader: getDocumentLoader(opts)}
 
     if (MerklizationConstants.DIGITS_ONLY_REGEX.test(term)) {
       const num = parseInt(term);
@@ -169,7 +151,7 @@ export class Path {
 
     if (Array.isArray(doc)) {
       if (!doc.length) {
-        throw new Error("errror: can't generate path on zero-sized array");
+        throw new Error("error: can't generate path on zero-sized array");
       }
       if (!acceptArray) {
         throw MerklizationConstants.ERRORS.UNEXPECTED_ARR_ELEMENT;
@@ -180,12 +162,12 @@ export class Path {
       docObjMap = doc;
     }
 
-    const ctxData = docObjMap['@context'];
-    if (ctxData) {
+    if ('@context' in docObjMap) {
       if (ldCTX) {
-        ldCTX = await ctxParser.parse(ctxData, { parentContext: ldCTX.getContextRaw() });
+        ldCTX = await jsonld.processContext(ldCTX, docObjMap, jsonldOpts);
       } else {
-        ldCTX = await ctxParser.parse(ctxData);
+        const emptyCtx = await jsonld.processContext(null, null, jsonldOpts);
+        ldCTX = await jsonld.processContext(emptyCtx, docObjMap, jsonldOpts);
       }
     }
 
@@ -194,10 +176,14 @@ export class Path {
 
     for (const k in elemKeys) {
       const key = elemKeys[k];
-      const expandTerm = ldCTX.expandTerm(key, true);
-
-      if (!(expandTerm === 'type' || expandTerm === '@type')) {
-        continue;
+      if (key !== '@type') {
+        const keyCtx = ldCTX.mappings.get(key)
+        if (typeof keyCtx !== 'object') {
+          continue
+        }
+        if (keyCtx['@id'] !== '@type') {
+          continue
+        }
       }
 
       let types: string[] = [];
@@ -213,16 +199,16 @@ export class Path {
       } else if (typeof docObjMap[key] === 'string') {
         types.push(docObjMap[key]);
       } else {
-        throw new Error(`error: unexpected @type fied type: ${typeof docObjMap[key]}`);
+        throw new Error(`error: unexpected @type field type: ${typeof docObjMap[key]}`);
       }
 
       for (const tt of types) {
-        const td = typedScopedCtx.getContextRaw()[tt];
+        const td = typedScopedCtx.mappings.get(tt);
         if (typeof td === 'object') {
           if (td) {
             const ctxObj = td['@context'];
-            if (ctxObj) {
-              ldCTX = await ctxParser.parse(ctxObj, { parentContext: ldCTX.getContextRaw() });
+            if ('@context' in td) {
+              ldCTX = await jsonld.processContext(ldCTX, td, jsonldOpts);
             }
           }
         }
@@ -231,27 +217,18 @@ export class Path {
       break;
     }
 
-    const m = await ldCTX.getContextRaw()[term];
-    const id = m['@id'];
-    if (!id) {
-      throw MerklizationConstants.ERRORS.NO_ID_ATTR;
-    }
-    if (typeof id !== 'string') {
-      throw new Error(`error: @id attr is not of type stirng: ${typeof id}`);
-    }
-
-    const ctxDataInner = m['@context'];
-    if (ctxDataInner) {
+    const expTerm = expandType(ldCTX, term);
+    if (expTerm.hasContext) {
       if (ldCTX) {
-        ldCTX = await ctxParser.parse(ctxDataInner, { parentContext: ldCTX.getContextRaw() });
+        ldCTX = await jsonld.processContext(ldCTX, expTerm.typeDef, jsonldOpts);
       } else {
-        ldCTX = await ctxParser.parse(ctxDataInner);
+        const emptyCtx = await jsonld.processContext(null, null, jsonldOpts);
+        ldCTX = await jsonld.processContext(emptyCtx, expTerm.typeDef, jsonldOpts);
       }
     }
-
     const moreParts = await Path.pathFromDocument(ldCTX, docObjMap[term], newPathParts, true, opts);
 
-    return [id, ...moreParts];
+    return [expTerm['@id'], ...moreParts];
   }
 
   static async newPathFromCtx(docStr: string, path: string, opts?: Options): Promise<Path> {
@@ -279,7 +256,7 @@ export class Path {
   };
 
   static async fromDocument(
-    ldCTX: JsonLdContextNormalized | null,
+    ldCTX: ParsedCtx | null,
     docStr: string,
     path: string,
     opts?: Options
@@ -308,12 +285,12 @@ export class Path {
     typeName: string,
     opts?: Options
   ): Promise<string> {
-    const ctxObj = JSON.parse(ctxStr);
 
-    const documentLoader = documentLoaderAdapter(getDocumentLoader(opts));
-    const ctxParser = new ContextParser({ documentLoader });
-    const parsedCtx = await ctxParser.parse(ctxObj['@context']);
-    const typeDef = parsedCtx.getContextRaw()[typeName];
+    const ctxObj = JSON.parse(ctxStr);
+    const jsonldOpts = { documentLoader: getDocumentLoader(opts)}
+    const emptyCtx = await jsonld.processContext(null, null, jsonldOpts);
+    const parsedCtx = await jsonld.processContext(emptyCtx, ctxObj, jsonldOpts);
+    const typeDef = parsedCtx.mappings.get(typeName);
 
     if (!typeDef) {
       throw new Error(`looks like ${typeName} is not a type`);
@@ -333,11 +310,34 @@ export class Path {
   }
 }
 
-function documentLoaderAdapter(docLoader: DocumentLoader): IDocumentLoader {
+interface CtxTypeAttrs {
+    '@id': string;
+    hasContext: boolean;
+    typeDef: object;
+}
+
+interface ParsedCtx {
+  mappings: Map<string, any>;
+}
+
+function expandType(ctx: ParsedCtx, term: string): CtxTypeAttrs {
+  const m = ctx.mappings.get(term);
+  if (typeof m !== 'object') {
+    throw MerklizationConstants.ERRORS.TERM_IS_NOT_DEFINED;
+  }
+
+  const id = m['@id'];
+  if (!id) {
+    throw MerklizationConstants.ERRORS.NO_ID_ATTR;
+  }
+
+  if (typeof id !== 'string') {
+    throw new Error(`error: @id attr is not of type string: ${typeof id}`);
+  }
+
   return {
-    async load(url: string): Promise<IJsonLdContext> {
-      const doc = await docLoader(url);
-      return doc.document;
-    }
+    '@id': id,
+    hasContext: '@context' in m,
+    typeDef: m,
   };
 }
