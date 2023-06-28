@@ -121,7 +121,7 @@ export class Path {
   };
 
   private static async pathFromDocument(
-    ldCTX: any | null,
+    ldCTX: ParsedCtx | null,
     doc: JsonLdDocument,
     pathParts: string[],
     acceptArray: boolean,
@@ -205,7 +205,6 @@ export class Path {
         const td = typedScopedCtx.mappings.get(tt);
         if (typeof td === 'object') {
           if (td) {
-            const ctxObj = td['@context'];
             if ('@context' in td) {
               ldCTX = await jsonld.processContext(ldCTX, td, jsonldOpts);
             }
@@ -316,7 +315,7 @@ interface CtxTypeAttrs {
 }
 
 interface ParsedCtx {
-  mappings: Map<string, any>;
+  mappings: Map<string, object | string>;
 }
 
 function expandType(ctx: ParsedCtx, term: string): CtxTypeAttrs {
