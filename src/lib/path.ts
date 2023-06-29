@@ -145,8 +145,6 @@ export class Path {
       throw new Error(`error: expected type object got ${typeof doc}`);
     }
 
-    let docObjMap = {};
-
     if (Array.isArray(doc)) {
       if (!doc.length) {
         throw new Error("error: can't generate path on zero-sized array");
@@ -156,20 +154,18 @@ export class Path {
       }
 
       return Path.pathFromDocument(ldCTX, doc[0], pathParts, false, opts);
-    } else {
-      docObjMap = doc;
     }
 
-    if ('@context' in docObjMap) {
+    if ('@context' in doc) {
       if (ldCTX) {
-        ldCTX = await processContext(ldCTX, docObjMap, jsonldOpts);
+        ldCTX = await processContext(ldCTX, doc, jsonldOpts);
       } else {
         const emptyCtx = await processContext(null, null, jsonldOpts);
-        ldCTX = await processContext(emptyCtx, docObjMap, jsonldOpts);
+        ldCTX = await processContext(emptyCtx, doc, jsonldOpts);
       }
     }
 
-    const elemKeys = sortArr(Object.keys(docObjMap));
+    const elemKeys = sortArr(Object.keys(doc));
     const typedScopedCtx = ldCTX;
 
     for (const k in elemKeys) {
@@ -186,28 +182,24 @@ export class Path {
 
       let types: string[] = [];
 
-      if (Array.isArray(docObjMap[key])) {
-        docObjMap[key].forEach((e) => {
+      if (Array.isArray(doc[key])) {
+        doc[key].forEach((e) => {
           if (typeof e !== 'string') {
             throw new Error(`error: @type value must be an array of strings: ${typeof e}`);
           }
           types.push(e as string);
           types = sortArr(types);
         });
-      } else if (typeof docObjMap[key] === 'string') {
-        types.push(docObjMap[key]);
+      } else if (typeof doc[key] === 'string') {
+        types.push(doc[key]);
       } else {
-        throw new Error(`error: unexpected @type field type: ${typeof docObjMap[key]}`);
+        throw new Error(`error: unexpected @type field type: ${typeof doc[key]}`);
       }
 
       for (const tt of types) {
         const td = typedScopedCtx.mappings.get(tt);
-        if (typeof td === 'object') {
-          if (td) {
-            if ('@context' in td) {
-              ldCTX = await processContext(ldCTX, td, jsonldOpts);
-            }
-          }
+        if (typeof td === 'object' && '@context' in td) {
+          ldCTX = await processContext(ldCTX, td as JsonLdDocument, jsonldOpts);
         }
       }
 
@@ -223,7 +215,7 @@ export class Path {
         ldCTX = await processContext(emptyCtx, expTerm.typeDef, jsonldOpts);
       }
     }
-    const moreParts = await Path.pathFromDocument(ldCTX, docObjMap[term], newPathParts, true, opts);
+    const moreParts = await Path.pathFromDocument(ldCTX, doc[term], newPathParts, true, opts);
 
     return [expTerm['@id'], ...moreParts];
   }
