@@ -39,7 +39,7 @@ export type Value = boolean | number | Temporal.Instant | string;
 
 export type Parts = Array<string | number>;
 
-interface ParsedCtx {
+export interface ParsedCtx {
   mappings: Map<string, object | string>;
 }
 

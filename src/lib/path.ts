@@ -1,5 +1,5 @@
 import { MerklizationConstants } from './constants';
-import { Hasher, Options, Parts } from './types/types';
+import { Hasher, Options, Parts, ParsedCtx } from './types/types';
 import { processContext } from 'jsonld';
 import { JsonLdDocument } from 'jsonld';
 import { DEFAULT_HASHER } from './poseidon';
@@ -312,10 +312,6 @@ interface CtxTypeAttrs {
     '@id': string;
     hasContext: boolean;
     typeDef: object;
-}
-
-interface ParsedCtx {
-  mappings: Map<string, object | string>;
 }
 
 function expandType(ctx: ParsedCtx, term: string): CtxTypeAttrs {
