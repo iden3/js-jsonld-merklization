@@ -38,3 +38,11 @@ export const canonicalDouble = (v: number) => v.toExponential(15).replace(/(\d)0
 export type Value = boolean | number | Temporal.Instant | string;
 
 export type Parts = Array<string | number>;
+
+interface ParsedCtx {
+  mappings: Map<string, object | string>;
+}
+
+declare module 'jsonld' {
+  function processContext(activeCtx: ParsedCtx | null, localCtx: object | null, opts: object): Promise<ParsedCtx>;
+}

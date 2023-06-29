@@ -1,3 +1,4 @@
+import { RemoteDocument, Url } from 'jsonld/jsonld-spec';
 import http from 'http';
 import { parseLinkHeader } from 'jsonld/lib/util';
 import { LINK_HEADER_CONTEXT } from 'jsonld/lib/constants';
@@ -257,13 +258,7 @@ async function _fetch({ url, method }: { url: string | URL; method?: string }) {
   }
 }
 
-export interface RemoteDocument {
-  contextUrl?: string | undefined;
-  documentUrl: string;
-  document: object;
-}
-
-export type DocumentLoader = (url: string) => Promise<RemoteDocument>;
+export type DocumentLoader = (url: Url) => Promise<RemoteDocument>;
 
 const ipfsURLPrefix = 'ipfs://';
 
@@ -271,7 +266,7 @@ export const getJsonLdDocLoader = (
   ipfsNodeURL: string = null,
   ipfsGatewayURL: string = null
 ): DocumentLoader => {
-  return async (url: string): Promise<RemoteDocument> => {
+  return async (url: Url): Promise<RemoteDocument> => {
     if (url.startsWith(ipfsURLPrefix)) {
       const ipfsURL: string = url.slice(ipfsURLPrefix.length);
       return await loadIPFS(ipfsURL, ipfsNodeURL, ipfsGatewayURL);
