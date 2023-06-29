@@ -1,5 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill';
 import { DocumentLoader } from '../../loaders/jsonld-loader';
+import {JsonLdDocument} from "jsonld/jsonld";
+import {Options as jsonLDOpts} from "jsonld/jsonld-spec";
 
 export interface Options {
   hasher?: Hasher;
@@ -38,3 +40,11 @@ export const canonicalDouble = (v: number) => v.toExponential(15).replace(/(\d)0
 export type Value = boolean | number | Temporal.Instant | string;
 
 export type Parts = Array<string | number>;
+
+export interface ParsedCtx {
+  mappings: Map<string, object | string>;
+}
+
+declare module 'jsonld' {
+  function processContext(activeCtx: ParsedCtx | null, localCtx: JsonLdDocument | null, opts: jsonLDOpts): Promise<ParsedCtx>;
+}

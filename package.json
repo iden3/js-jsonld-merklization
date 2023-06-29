@@ -38,7 +38,7 @@
     "@esbuild-plugins/node-globals-polyfill": "^0.1.1",
     "@esbuild-plugins/node-modules-polyfill": "^0.1.4",
     "@types/jest": "^29.2.0",
-    "@types/jsonld": "^1.5.8",
+    "@types/jsonld": "^1.5.9",
     "@types/node": "^18.11.17",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "esbuild": "^0.15.15",
@@ -57,8 +57,7 @@
     "@iden3/js-crypto": "1.0.0-beta.1",
     "@iden3/js-merkletree": "1.0.0-beta.2",
     "@js-temporal/polyfill": "^0.4.4",
-    "jsonld": "8.1.0",
-    "jsonld-context-parser": "^2.2.2",
+    "jsonld": "^8.2.0",
     "n3": "^1.16.3"
   },
   "browserslist": {

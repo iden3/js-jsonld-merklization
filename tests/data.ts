@@ -116,6 +116,52 @@ export const testDocument = `{
   ]
 }`;
 
+export const nestedFieldDocument = `{
+  "@context": [
+    {
+      "@version": 1.1,
+      "@protected": true,
+      "id": "@id",
+      "type": "@type",
+      "CustomType": {
+        "@id": "urn:uuid:79f824ba-fee3-11ed-be56-0242ac120002",
+        "@context": {
+          "@version": 1.1,
+          "@protected": true,
+          "@propagate": true,
+          "id": "@id",
+          "type": "@type",
+          "xsd": "http://www.w3.org/2001/XMLSchema#",
+          "customField": {
+            "@id": "polygon-vocab:customField",
+            "@type": "xsd:string"
+          },
+          "polygon-vocab": "urn:uuid:87caf7a2-fee3-11ed-be56-0242ac120001#",
+          "objectField": {
+            "@id": "polygon-vocab:objectField",
+            "@context": {
+              "@version": 1.1,
+              "@protected": true,
+              "id": "@id",
+              "type": "@type",
+              "customNestedField": {
+                "@id": "polygon-vocab:customNestedField",
+                "@type": "xsd:integer"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "id": "urn:urn:e27a921e-fee5-11ed-be56-0242ac100000",
+  "type": ["CustomType"],
+  "customField": "1234",
+  "objectField": {
+    "customNestedField": 1
+  }
+}`;
+
 export const credentials_v1 = `
 {
   "@context": {

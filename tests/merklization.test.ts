@@ -11,6 +11,7 @@ import {
   multigraphDoc,
   multigraphDoc2,
   testDocument,
+  nestedFieldDocument,
   docWithDouble,
   vp,
   ipfsDocument,
@@ -606,6 +607,18 @@ describe('tests merkelization', () => {
       'https://www.w3.org/2018/credentials#credentialSubject',
       1,
       'http://schema.org/birthDate'
+    ]);
+
+    expect(want).toEqual(result);
+  });
+
+  it('TestPathFromDocument - path to nested field', async () => {
+    const inp = 'objectField.customNestedField';
+    const result = await Path.fromDocument(null, nestedFieldDocument, inp);
+
+    const want = new Path([
+      'urn:uuid:87caf7a2-fee3-11ed-be56-0242ac120001#objectField',
+      'urn:uuid:87caf7a2-fee3-11ed-be56-0242ac120001#customNestedField',
     ]);
 
     expect(want).toEqual(result);

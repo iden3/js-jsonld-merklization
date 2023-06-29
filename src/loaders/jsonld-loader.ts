@@ -4,8 +4,6 @@ import { parseLinkHeader } from 'jsonld/lib/util';
 import { LINK_HEADER_CONTEXT } from 'jsonld/lib/constants';
 import JsonLdError from 'jsonld/lib/JsonLdError';
 import { prependBase } from 'jsonld/lib/url';
-// eslint-disable-next-line  @typescript-eslint/no-var-requires
-import 'cross-fetch/polyfill';
 
 /**
  * Creates a built-in node document loader.
