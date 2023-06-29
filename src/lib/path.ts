@@ -1,6 +1,6 @@
 import { MerklizationConstants } from './constants';
 import { Hasher, Options, Parts } from './types/types';
-import * as jsonld from 'jsonld';
+import { processContext } from 'jsonld';
 import { JsonLdDocument } from 'jsonld';
 import { DEFAULT_HASHER } from './poseidon';
 import { byteEncoder, sortArr } from './utils';
@@ -47,8 +47,8 @@ export class Path {
       throw MerklizationConstants.ERRORS.CONTEXT_NOT_DEFINED;
     }
     const jsonldOpts = { documentLoader: getDocumentLoader(opts)}
-    const emptyCtx = await jsonld.processContext(null, null, jsonldOpts);
-    let parsedCtx = await jsonld.processContext(emptyCtx, doc, jsonldOpts);
+    const emptyCtx = await processContext(null, null, jsonldOpts);
+    let parsedCtx = await processContext(emptyCtx, doc, jsonldOpts);
 
     const parts = path.split('.');
 
@@ -69,7 +69,7 @@ export class Path {
 
         const nextCtx = m['@context'];
         if (nextCtx) {
-          parsedCtx = await jsonld.processContext(parsedCtx, m, jsonldOpts);
+          parsedCtx = await processContext(parsedCtx, m, jsonldOpts);
         }
         this.parts.push(id);
       }
@@ -84,8 +84,8 @@ export class Path {
     }
 
     const jsonldOpts = { documentLoader: getDocumentLoader(opts)}
-    const emptyCtx = await jsonld.processContext(null, null, jsonldOpts);
-    let parsedCtx = await jsonld.processContext(emptyCtx, ctxObj, jsonldOpts);
+    const emptyCtx = await processContext(null, null, jsonldOpts);
+    let parsedCtx = await processContext(emptyCtx, ctxObj, jsonldOpts);
 
     const parts = path.split('.');
 
@@ -93,7 +93,7 @@ export class Path {
       const p = parts[i];
       const expP = expandType(parsedCtx, p)
       if (expP.hasContext) {
-        parsedCtx = await jsonld.processContext(parsedCtx, expP.typeDef, jsonldOpts);
+        parsedCtx = await processContext(parsedCtx, expP.typeDef, jsonldOpts);
       }
       this.parts.push(expP['@id']);
     }
@@ -163,10 +163,10 @@ export class Path {
 
     if ('@context' in docObjMap) {
       if (ldCTX) {
-        ldCTX = await jsonld.processContext(ldCTX, docObjMap, jsonldOpts);
+        ldCTX = await processContext(ldCTX, docObjMap, jsonldOpts);
       } else {
-        const emptyCtx = await jsonld.processContext(null, null, jsonldOpts);
-        ldCTX = await jsonld.processContext(emptyCtx, docObjMap, jsonldOpts);
+        const emptyCtx = await processContext(null, null, jsonldOpts);
+        ldCTX = await processContext(emptyCtx, docObjMap, jsonldOpts);
       }
     }
 
@@ -206,7 +206,7 @@ export class Path {
         if (typeof td === 'object') {
           if (td) {
             if ('@context' in td) {
-              ldCTX = await jsonld.processContext(ldCTX, td, jsonldOpts);
+              ldCTX = await processContext(ldCTX, td, jsonldOpts);
             }
           }
         }
@@ -218,10 +218,10 @@ export class Path {
     const expTerm = expandType(ldCTX, term);
     if (expTerm.hasContext) {
       if (ldCTX) {
-        ldCTX = await jsonld.processContext(ldCTX, expTerm.typeDef, jsonldOpts);
+        ldCTX = await processContext(ldCTX, expTerm.typeDef, jsonldOpts);
       } else {
-        const emptyCtx = await jsonld.processContext(null, null, jsonldOpts);
-        ldCTX = await jsonld.processContext(emptyCtx, expTerm.typeDef, jsonldOpts);
+        const emptyCtx = await processContext(null, null, jsonldOpts);
+        ldCTX = await processContext(emptyCtx, expTerm.typeDef, jsonldOpts);
       }
     }
     const moreParts = await Path.pathFromDocument(ldCTX, docObjMap[term], newPathParts, true, opts);
@@ -286,8 +286,8 @@ export class Path {
 
     const ctxObj = JSON.parse(ctxStr);
     const jsonldOpts = { documentLoader: getDocumentLoader(opts)}
-    const emptyCtx = await jsonld.processContext(null, null, jsonldOpts);
-    const parsedCtx = await jsonld.processContext(emptyCtx, ctxObj, jsonldOpts);
+    const emptyCtx = await processContext(null, null, jsonldOpts);
+    const parsedCtx = await processContext(emptyCtx, ctxObj, jsonldOpts);
     const typeDef = parsedCtx.mappings.get(typeName);
 
     if (!typeDef) {
