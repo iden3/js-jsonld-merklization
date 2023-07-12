@@ -95,7 +95,7 @@ export class Merklizer {
       parts = parts.slice(1);
     }
 
-    if (obj['@value']) {
+    if (typeof obj['@value'] !== 'undefined') {
       return obj['@value'];
     }
 
