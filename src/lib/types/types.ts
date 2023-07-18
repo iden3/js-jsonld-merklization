@@ -1,7 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill';
 import { DocumentLoader } from '../../loaders/jsonld-loader';
-import {JsonLdDocument} from "jsonld/jsonld";
-import {Options as jsonLDOpts} from "jsonld/jsonld-spec";
+import { JsonLdDocument } from 'jsonld/jsonld';
+import { Options as jsonLDOpts } from 'jsonld/jsonld-spec';
 
 export interface Options {
   hasher?: Hasher;
@@ -46,5 +46,9 @@ export interface ParsedCtx {
 }
 
 declare module 'jsonld' {
-  function processContext(activeCtx: ParsedCtx | null, localCtx: JsonLdDocument | null, opts: jsonLDOpts): Promise<ParsedCtx>;
+  function processContext(
+    activeCtx: ParsedCtx | null,
+    localCtx: JsonLdDocument | null,
+    opts: jsonLDOpts
+  ): Promise<ParsedCtx>;
 }

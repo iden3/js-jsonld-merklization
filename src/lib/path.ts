@@ -45,7 +45,7 @@ export class Path {
     if (!doc['@context']) {
       throw MerklizationConstants.ERRORS.CONTEXT_NOT_DEFINED;
     }
-    const jsonldOpts = { documentLoader: getDocumentLoader(opts)}
+    const jsonldOpts = { documentLoader: getDocumentLoader(opts) };
     const emptyCtx = await processContext(null, null, jsonldOpts);
     let parsedCtx = await processContext(emptyCtx, doc, jsonldOpts);
 
@@ -82,7 +82,7 @@ export class Path {
       throw MerklizationConstants.ERRORS.PARSED_CONTEXT_IS_NULL;
     }
 
-    const jsonldOpts = { documentLoader: getDocumentLoader(opts)}
+    const jsonldOpts = { documentLoader: getDocumentLoader(opts) };
     const emptyCtx = await processContext(null, null, jsonldOpts);
     let parsedCtx = await processContext(emptyCtx, ctxObj, jsonldOpts);
 
@@ -90,7 +90,7 @@ export class Path {
 
     for (const i in parts) {
       const p = parts[i];
-      const expP = expandType(parsedCtx, p)
+      const expP = expandType(parsedCtx, p);
       if (expP.hasContext) {
         parsedCtx = await processContext(parsedCtx, expP.typeDef, jsonldOpts);
       }
@@ -132,7 +132,7 @@ export class Path {
 
     const term = pathParts[0];
     const newPathParts = pathParts.slice(1);
-    const jsonldOpts = { documentLoader: getDocumentLoader(opts)}
+    const jsonldOpts = { documentLoader: getDocumentLoader(opts) };
 
     if (MerklizationConstants.DIGITS_ONLY_REGEX.test(term)) {
       const num = parseInt(term);
@@ -171,12 +171,12 @@ export class Path {
     for (const k in elemKeys) {
       const key = elemKeys[k];
       if (key !== '@type') {
-        const keyCtx = ldCTX.mappings.get(key)
+        const keyCtx = ldCTX.mappings.get(key);
         if (typeof keyCtx !== 'object') {
-          continue
+          continue;
         }
         if (keyCtx['@id'] !== '@type') {
-          continue
+          continue;
         }
       }
 
@@ -274,9 +274,8 @@ export class Path {
     typeName: string,
     opts?: Options
   ): Promise<string> {
-
     const ctxObj = JSON.parse(ctxStr);
-    const jsonldOpts = { documentLoader: getDocumentLoader(opts)}
+    const jsonldOpts = { documentLoader: getDocumentLoader(opts) };
     const emptyCtx = await processContext(null, null, jsonldOpts);
     const parsedCtx = await processContext(emptyCtx, ctxObj, jsonldOpts);
     const typeDef = parsedCtx.mappings.get(typeName);
@@ -300,9 +299,9 @@ export class Path {
 }
 
 interface CtxTypeAttrs {
-    '@id': string;
-    hasContext: boolean;
-    typeDef: object;
+  '@id': string;
+  hasContext: boolean;
+  typeDef: object;
 }
 
 function expandType(ctx: ParsedCtx, term: string): CtxTypeAttrs {
@@ -323,6 +322,6 @@ function expandType(ctx: ParsedCtx, term: string): CtxTypeAttrs {
   return {
     '@id': id,
     hasContext: '@context' in m,
-    typeDef: m,
+    typeDef: m
   };
 }
