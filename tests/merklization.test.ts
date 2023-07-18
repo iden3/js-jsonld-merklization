@@ -618,7 +618,7 @@ describe('tests merkelization', () => {
 
     const want = new Path([
       'urn:uuid:87caf7a2-fee3-11ed-be56-0242ac120001#objectField',
-      'urn:uuid:87caf7a2-fee3-11ed-be56-0242ac120001#customNestedField',
+      'urn:uuid:87caf7a2-fee3-11ed-be56-0242ac120001#customNestedField'
     ]);
 
     expect(want).toEqual(result);
