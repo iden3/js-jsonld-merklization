@@ -233,6 +233,15 @@ async function _fetch({ url, method }: { url: string | URL; method?: string }) {
     options['method'] = method;
   }
   try {
+    url = new URL(url);
+    if (url.username && url.password) {
+      options['headers'] = {
+        ...(options['headers'] ?? {}),
+        authorization: `Basic ${btoa(url.username + ':' + url.password)}`
+      };
+      url = removeCredentialsFromURL(url);
+    }
+
     const res = await fetch(url, options);
     if (res.status >= 300 && res.status < 400) {
       return { res, body: null };
@@ -256,6 +265,12 @@ async function _fetch({ url, method }: { url: string | URL; method?: string }) {
   }
 }
 
+function removeCredentialsFromURL(url: string | URL): string {
+  const urlObj = new URL(url);
+  urlObj.username = '';
+  urlObj.password = '';
+  return urlObj.href;
+}
 export type DocumentLoader = (url: Url) => Promise<RemoteDocument>;
 
 const ipfsURLPrefix = 'ipfs://';

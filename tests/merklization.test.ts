@@ -461,7 +461,10 @@ describe('tests merkelization', () => {
       expect(birthDate.getTime()).toEqual(valueD.epochMilliseconds);
 
       const valueMTEntry = await MtValue.mkValueMtEntry(DEFAULT_HASHER, valueD);
-      const ok = await verifyProof(await mz.mt!.root(), proof, pathMTEntry, valueMTEntry);
+      if (!mz.mt) {
+        throw new Error("can't hash mt entry ");
+      }
+      const ok = await verifyProof(await mz.mt.root(), proof, pathMTEntry, valueMTEntry);
       expect(ok).toBeTruthy();
 
       expect((await mz.root()).hex()).toEqual(
@@ -1025,9 +1028,8 @@ describe('merklize document with ipfs context', () => {
   // node --experimental-vm-modules node_modules/jest/bin/jest.js -t 'set kubo client' tests/merklization.test.ts
 
   const ipfsNodeURL = process.env.IPFS_URL ?? null;
-  if (ipfsNodeURL === null) {
-    console.warn('IPFS_URL is not set, skipping IPFS Node test');
-    return;
+  if (!ipfsNodeURL) {
+    throw new Error('IPFS_URL is not set, skipping IPFS Node test');
   }
 
   beforeAll(async () => {
@@ -1036,7 +1038,7 @@ describe('merklize document with ipfs context', () => {
 
   it('ipfsNodeURL is set', async () => {
     const mz: Merklizer = await Merklizer.merklizeJSONLD(ipfsDocument, {
-      ipfsNodeURL: ipfsNodeURL
+      ipfsNodeURL
     });
     expect((await mz.root()).bigInt().toString()).toEqual(
       '19309047812100087948241250053335720576191969395309912987389452441269932261840'
@@ -1045,7 +1047,7 @@ describe('merklize document with ipfs context', () => {
 
   it('ipfsGatewayURL is set', async () => {
     const mz: Merklizer = await Merklizer.merklizeJSONLD(ipfsDocument, {
-      ipfsGatewayURL: 'http://ipfs.io'
+      ipfsNodeURL
     });
     expect((await mz.root()).bigInt().toString()).toEqual(
       '19309047812100087948241250053335720576191969395309912987389452441269932261840'
@@ -1075,10 +1077,20 @@ async function pushSchemasToIPFS(ipfsNodeURL: string): Promise<void> {
     'dir1/dir2/bbs-v2.jsonld'
   );
 
-  const addURL = normalizeIPFSNodeURL(ipfsNodeURL, 'add');
-  const res = await fetch(addURL, {
+  let url: string | URL = normalizeIPFSNodeURL(ipfsNodeURL, 'add');
+  url = new URL(url);
+  let headers = {};
+  if (url.username && url.password) {
+    headers = {
+      authorization: `Basic ${btoa(url.username + ':' + url.password)}`
+    };
+    url.username = '';
+    url.password = '';
+  }
+  const res = await fetch(url, {
     method: 'POST',
-    body: formData
+    body: formData,
+    headers
   });
 
   const resBody = await res.text();
