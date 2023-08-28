@@ -45,8 +45,8 @@ export class Merklizer {
     return new MtValue(val, this.hasher);
   }
 
-  async resolveDocPath(path: string): Promise<Path> {
-    const realPath = await Path.fromDocument(null, this.srcDoc, path);
+  async resolveDocPath(path: string, opts?: Options): Promise<Path> {
+    const realPath = await Path.fromDocument(null, this.srcDoc, path, opts);
     realPath.hasher = this.hasher;
     return realPath;
   }
@@ -148,7 +148,7 @@ export class Merklizer {
   ): Promise<bigint> {
     const valueStr = convertAnyToString(value, dataType);
 
-    const xsdValue = convertStringToXsdValue(dataType, valueStr);
+    const xsdValue = convertStringToXsdValue(dataType, valueStr, h.prime());
 
     return await MtValue.mkValueMtEntry(h, xsdValue);
   }

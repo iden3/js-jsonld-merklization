@@ -3,6 +3,7 @@ import { Hasher } from './types/types';
 import { Value } from './types/types';
 import { DEFAULT_HASHER } from './poseidon';
 import { Temporal } from '@js-temporal/polyfill';
+import { minMaxFromPrime } from './utils';
 
 const bytesEncoder = new TextEncoder();
 
@@ -57,6 +58,17 @@ export class MtValue {
     return MtValue.mkValueMtEntry(this.h, this.value);
   }
 
+  isBigInt(): boolean {
+    return typeof this.value === 'bigint';
+  }
+
+  asBigInt(): bigint {
+    if (!this.isBigInt()) {
+      throw MerklizationConstants.ERRORS.MT_VALUE_INCORRECT_TYPE;
+    }
+    return this.value as bigint;
+  }
+
   static mkValueMtEntry = (h: Hasher, v: Value): Promise<bigint> => {
     switch (typeof v) {
       case 'number':
@@ -65,6 +77,8 @@ export class MtValue {
         return MtValue.mkValueString(h, v);
       case 'boolean':
         return MtValue.mkValueBool(h, v);
+      case 'bigint':
+        return MtValue.mkValueBigInt(h, v);
       default: {
         if (v instanceof Temporal.Instant) {
           return MtValue.mkValueTime(h, v);
@@ -99,5 +113,23 @@ export class MtValue {
   static mkValueTime = async (h: Hasher, v: Temporal.Instant): Promise<bigint> => {
     // convert unixTimeStamp from ms -> ns as in go implementation
     return this.mkValueInt(h, v.epochNanoseconds);
+  };
+
+  static mkValueBigInt = async (h: Hasher, v: bigint): Promise<bigint> => {
+    const prime = h.prime();
+    if (v >= prime) {
+      throw new Error(`value is too big: ${v}`);
+    }
+    if (v < 0n) {
+      const { min } = minMaxFromPrime(prime);
+
+      if (v < min) {
+        throw new Error(`value is too small: ${v}`);
+      }
+
+      return v + prime;
+    }
+
+    return v;
   };
 }

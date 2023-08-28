@@ -15,7 +15,8 @@ import {
   docWithDouble,
   vp,
   ipfsDocument,
-  kycV102
+  kycV102,
+  testDocumentIPFS
 } from './data';
 import { Merkletree, verifyProof, InMemoryDB, str2Bytes } from '@iden3/js-merkletree';
 import { DEFAULT_HASHER } from '../src/lib/poseidon';
@@ -26,6 +27,7 @@ import { TestHasher } from './hasher';
 import { poseidon } from '@iden3/js-crypto';
 import { TextEncoder } from 'util';
 import { normalizeIPFSNodeURL } from '../src/loaders/jsonld-loader';
+import customSchemaJSON from './testdata/custom-schema.json';
 
 describe('tests merkelization', () => {
   it('multigraph TestEntriesFromRDF', async () => {
@@ -62,7 +64,7 @@ describe('tests merkelization', () => {
           'https://github.com/iden3/claim-schema-vocab/blob/main/proofs/Iden3SparseMerkleTreeProof-v2.md#state',
           'https://github.com/iden3/claim-schema-vocab/blob/main/proofs/Iden3SparseMerkleTreeProof-v2.md#blockTimestamp'
         ]),
-        123,
+        123n,
         'http://www.w3.org/2001/XMLSchema#integer'
       ),
       new RDFEntry(
@@ -79,7 +81,7 @@ describe('tests merkelization', () => {
           1,
           'https://github.com/iden3/claim-schema-vocab/blob/main/credentials/kyc.md#birthday'
         ]),
-        19960424,
+        19960424n,
         'http://www.w3.org/2001/XMLSchema#integer'
       )
     ];
@@ -318,7 +320,7 @@ describe('tests merkelization', () => {
       ),
       new RDFEntry(
         new Path(['http://schema.org/identifier']),
-        83627465,
+        83627465n,
         'http://www.w3.org/2001/XMLSchema#integer'
       ),
       new RDFEntry(
@@ -598,8 +600,8 @@ describe('tests merkelization', () => {
     const { proof, value } = await mz.proof(path);
 
     expect(proof.existence).toBe(true);
-    const i = value?.asNumber();
-    expect(i).toEqual(19960424);
+    const i = value?.asBigInt();
+    expect(i).toEqual(19960424n);
   });
 
   it('TestPathFromDocument', async () => {
@@ -643,6 +645,7 @@ describe('tests merkelization', () => {
   });
 
   it('TestHashValueFromDocument', async () => {
+    const jsonStr = JSON.stringify(customSchemaJSON);
     const testCases = [
       {
         name: 'xsd:integer',
@@ -727,15 +730,82 @@ describe('tests merkelization', () => {
         datatype: 'http://www.w3.org/2001/XMLSchema#integer',
         value: 19960424,
         wantHash: '19960424'
+      },
+      {
+        name: 'max value for positive integer',
+        ctxJSON: jsonStr,
+        pathToField: 'TestType1.positiveNumber',
+        datatype: 'http://www.w3.org/2001/XMLSchema#positiveInteger',
+        value: '21888242871839275222246405745257275088548364400416034343698204186575808495616',
+        wantHash: '21888242871839275222246405745257275088548364400416034343698204186575808495616'
+      },
+      {
+        name: 'max value for positive integer - too large error',
+        ctxJSON: jsonStr,
+        pathToField: 'TestType1.positiveNumber',
+        datatype: 'http://www.w3.org/2001/XMLSchema#positiveInteger',
+        value: '21888242871839275222246405745257275088548364400416034343698204186575808495617',
+        wantHashErr:
+          'integer exceeds maximum value: 21888242871839275222246405745257275088548364400416034343698204186575808495617'
+      },
+      {
+        name: 'max value for positive integer - negative error',
+        ctxJSON: jsonStr,
+        pathToField: 'TestType1.positiveNumber',
+        datatype: 'http://www.w3.org/2001/XMLSchema#positiveInteger',
+        value: '-100500',
+        wantHashErr: 'integer is below minimum value: -100500'
+      },
+      {
+        name: 'max value for integer',
+        pathToField: 'KYCCountryOfResidenceCredential.countryCode',
+        datatype: 'http://www.w3.org/2001/XMLSchema#integer',
+        value: '10944121435919637611123202872628637544274182200208017171849102093287904247808',
+        wantHash: '10944121435919637611123202872628637544274182200208017171849102093287904247808'
+      },
+      {
+        name: 'max value for integer - too large error',
+        pathToField: 'KYCCountryOfResidenceCredential.countryCode',
+        datatype: 'http://www.w3.org/2001/XMLSchema#integer',
+        value: '10944121435919637611123202872628637544274182200208017171849102093287904247809',
+        wantHashErr:
+          'integer exceeds maximum value: 10944121435919637611123202872628637544274182200208017171849102093287904247809'
+      },
+      {
+        name: 'max value for integer - -1',
+        pathToField: 'KYCCountryOfResidenceCredential.countryCode',
+        datatype: 'http://www.w3.org/2001/XMLSchema#integer',
+        value: '-1',
+        wantHash: '21888242871839275222246405745257275088548364400416034343698204186575808495616'
+      },
+      {
+        name: 'max value for integer - minimum value',
+        pathToField: 'KYCCountryOfResidenceCredential.countryCode',
+        datatype: 'http://www.w3.org/2001/XMLSchema#integer',
+        value: '-10944121435919637611123202872628637544274182200208017171849102093287904247808',
+        wantHash: '10944121435919637611123202872628637544274182200208017171849102093287904247809'
+      },
+      {
+        name: 'max value for integer - too small error',
+        pathToField: 'KYCCountryOfResidenceCredential.countryCode',
+        datatype: 'http://www.w3.org/2001/XMLSchema#integer',
+        value: '-10944121435919637611123202872628637544274182200208017171849102093287904247809',
+        wantHashErr:
+          'integer is below minimum value: -10944121435919637611123202872628637544274182200208017171849102093287904247809'
       }
     ];
 
     for (const tc of testCases) {
-      const typ = await Path.newTypeFromContext(kycschema_jsonld, tc.pathToField);
-      expect(typ).toEqual(tc.datatype);
+      const ldContext = tc.ctxJSON ?? kycschema_jsonld;
 
-      const result = await Merklizer.hashValue(tc.datatype, tc.value);
-      expect(result.toString()).toEqual(tc.wantHash.toString());
+      const typ = await Path.newTypeFromContext(ldContext, tc.pathToField);
+      expect(typ).toEqual(tc.datatype);
+      if (tc.wantHashErr) {
+        await expect(Merklizer.hashValue(typ, tc.value)).rejects.toThrow(tc.wantHashErr);
+      } else {
+        const result = await Merklizer.hashValue(tc.datatype, tc.value);
+        expect(result.toString()).toEqual(tc.wantHash?.toString());
+      }
     }
   });
 
@@ -861,7 +931,7 @@ describe('tests merkelization', () => {
         pathToField: 'KYCEmployee.documentType',
         datatype: 'http://www.w3.org/2001/XMLSchema#integer',
         value: 'one',
-        wantErr: 'incorrect integer value'
+        wantErr: 'Cannot convert one to a BigInt'
       },
       {
         name: 'xsd:dateTime invalid format MM-DD-YYYY go format (01-02-2006)',
@@ -1059,12 +1129,30 @@ describe('merklize document with ipfs context', () => {
       'Dereferencing a URL did not result in a valid JSON-LD object'
     );
   });
+
+  it('TestExistenceProofIPFS', async () => {
+    const opts = {
+      ipfsGatewayURL: 'https://ipfs.io'
+    };
+    const mz = await Merklizer.merklizeJSONLD(testDocumentIPFS, opts);
+    const path = await mz.resolveDocPath('credentialSubject.testNewTypeInt', opts);
+    const wantPath = new Path([
+      'https://www.w3.org/2018/credentials#credentialSubject',
+      'urn:uuid:0a8092e3-7100-4068-ba67-fae502cc6e7b#testNewTypeInt'
+    ]);
+
+    expect(wantPath).toEqual(path);
+    const { proof, value } = await mz.proof(path);
+    expect(proof.existence).toBe(true);
+
+    const i = value?.asBigInt();
+    expect(1n).toEqual(i);
+  });
 });
 
 async function pushSchemasToIPFS(ipfsNodeURL: string): Promise<void> {
   const citizenshipData = await readFile('tests/testdata/citizenship-v1.jsonld');
   const bbsData = await readFile('tests/testdata/dir1/dir2/bbs-v2.jsonld');
-
   const formData = new FormData();
   formData.append(
     'file',
@@ -1076,7 +1164,6 @@ async function pushSchemasToIPFS(ipfsNodeURL: string): Promise<void> {
     new Blob([bbsData], { type: 'application/octet-stream' }),
     'dir1/dir2/bbs-v2.jsonld'
   );
-
   let url: string | URL = normalizeIPFSNodeURL(ipfsNodeURL, 'add');
   url = new URL(url);
   let headers = {};
@@ -1092,13 +1179,11 @@ async function pushSchemasToIPFS(ipfsNodeURL: string): Promise<void> {
     body: formData,
     headers
   });
-
   const resBody = await res.text();
   const records = resBody
     .split('\n')
     .filter((l) => l.trim().length > 0)
     .map((l) => JSON.parse(l).Hash);
-
   // Check that URLs from ipfsDocument are uploaded to IPFS
   expect(records).toContain('QmdP4MZkESEabRVB322r2xWm7TCi7LueMNWMJawYmSy7hp');
   expect(records).toContain('Qmbp4kwoHULnmK71abrxdksjPH5sAjxSAXU5PEp2XRMFNw');
