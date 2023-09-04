@@ -16,7 +16,8 @@ export class Merklizer {
     public readonly mt: Merkletree | null = null,
     public readonly hasher: Hasher = DEFAULT_HASHER,
     public readonly entries: Map<string, RDFEntry> = new Map(),
-    public compacted: NodeObject | null = null
+    public compacted: NodeObject | null = null,
+    public documentLoader = getDocumentLoader()
   ) {
     if (!mt) {
       const { db, writable, maxLevels } = getMerkleTreeInitParam();
@@ -45,13 +46,13 @@ export class Merklizer {
     return new MtValue(val, this.hasher);
   }
 
-  async resolveDocPath(path: string): Promise<Path> {
-    const realPath = await Path.fromDocument(null, this.srcDoc, path);
+  async resolveDocPath(path: string, opts?: Options): Promise<Path> {
+    const realPath = await Path.fromDocument(null, this.srcDoc, path, opts);
     realPath.hasher = this.hasher;
     return realPath;
   }
 
-  private async entry(path: Path): Promise<RDFEntry> {
+  async entry(path: Path): Promise<RDFEntry> {
     const key = await path.mtEntry();
     const e = this.entries.get(key.toString());
     if (!e) {
@@ -115,9 +116,9 @@ export class Merklizer {
 
   static async merklizeJSONLD(docStr: string, opts?: Options): Promise<Merklizer> {
     const hasher = getHasher(opts);
-    const mz = new Merklizer(docStr, null, hasher);
-    const doc = JSON.parse(mz.srcDoc);
     const documentLoader = getDocumentLoader(opts);
+    const mz = new Merklizer(docStr, null, hasher, new Map(), null, documentLoader);
+    const doc = JSON.parse(mz.srcDoc);
     const dataset = await RDFDataset.fromDocument(doc, documentLoader);
     const entries = await RDFEntry.fromDataSet(dataset, hasher);
 
@@ -148,8 +149,15 @@ export class Merklizer {
   ): Promise<bigint> {
     const valueStr = convertAnyToString(value, dataType);
 
-    const xsdValue = convertStringToXsdValue(dataType, valueStr);
+    const xsdValue = convertStringToXsdValue(dataType, valueStr, h.prime());
 
     return await MtValue.mkValueMtEntry(h, xsdValue);
+  }
+
+  get options(): Options {
+    return {
+      hasher: this.hasher,
+      documentLoader: this.documentLoader
+    };
   }
 }

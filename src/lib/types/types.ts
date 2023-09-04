@@ -37,7 +37,7 @@ export const isDouble = (v: number) => String(v).includes('.') || Math.abs(v) >=
 
 export const canonicalDouble = (v: number) => v.toExponential(15).replace(/(\d)0*e\+?/, '$1E');
 
-export type Value = boolean | number | Temporal.Instant | string;
+export type Value = boolean | number | Temporal.Instant | string | bigint;
 
 export type Parts = Array<string | number>;
 

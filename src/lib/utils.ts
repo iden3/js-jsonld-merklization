@@ -1,3 +1,4 @@
+/* eslint-disable no-case-declarations */
 import { Quad } from 'n3';
 import { MerklizationConstants } from './constants';
 import { canonicalDouble, Value, XSDNS } from './types/types';
@@ -33,6 +34,7 @@ export const validateValue = (val: Value): void => {
   switch (typeof val) {
     case 'boolean':
     case 'string':
+    case 'bigint':
     case 'number':
       return;
     case 'object':
@@ -46,52 +48,86 @@ export const validateValue = (val: Value): void => {
   );
 };
 
-export const convertStringToXsdValue = (dataType: string, valueStr: string): Value => {
-  let value: Value;
+export interface Range {
+  min: bigint;
+  max: bigint;
+}
+
+export const minMaxFromPrime = (prime: bigint): Range => {
+  const max = prime / 2n;
+  const min = max - prime + 1n;
+  return { min, max };
+};
+
+// return included minimum and included maximum values for integers by XSD type
+export function minMaxByXSDType(xsdType: string, prime: bigint): Range {
+  switch (xsdType) {
+    case XSDNS.PositiveInteger:
+      return { min: 1n, max: prime - 1n };
+    case XSDNS.NonNegativeInteger:
+      return { min: 0n, max: prime - 1n };
+    case XSDNS.Integer:
+      return minMaxFromPrime(prime);
+    case XSDNS.NegativeInteger:
+      return { min: minMaxFromPrime(prime).min, max: -1n };
+    case XSDNS.NonPositiveInteger:
+      return { min: minMaxFromPrime(prime).min, max: 0n };
+    default:
+      throw new Error(`unsupported XSD type: ${xsdType}`);
+  }
+}
+
+export const convertStringToXsdValue = (
+  dataType: string,
+  valueStr: string,
+  maxFieldValue: bigint
+): Value => {
   switch (dataType) {
     case XSDNS.Boolean:
       switch (valueStr) {
         case 'false':
         case '0':
-          value = false;
-          break;
+          return false;
         case 'true':
         case '1':
-          value = true;
-          break;
+          return true;
         default:
           throw new Error('incorrect boolean value');
       }
-      break;
     case XSDNS.Integer:
     case XSDNS.NonNegativeInteger:
     case XSDNS.NonPositiveInteger:
     case XSDNS.NegativeInteger:
     case XSDNS.PositiveInteger:
-      value = parseInt(valueStr);
-      if (isNaN(value) || value.toString() !== valueStr) {
-        throw new Error('incorrect integer value');
+      const int = BigInt(valueStr);
+
+      const { min, max } = minMaxByXSDType(dataType, maxFieldValue);
+
+      if (int > max) {
+        throw new Error(`integer exceeds maximum value: ${int}`);
       }
-      break;
+
+      if (int < min) {
+        throw new Error(`integer is below minimum value: ${int}`);
+      }
+
+      return int;
+
     case XSDNS.DateTime: {
       if (isNaN(Date.parse(valueStr))) {
         throw new Error(`error: error parsing time string ${valueStr}`);
       }
       const dateRegEx = /^\d{4}-\d{2}-\d{2}$/;
       if (dateRegEx.test(valueStr)) {
-        value = Temporal.Instant.from(new Date(valueStr).toISOString());
-      } else {
-        value = Temporal.Instant.from(valueStr);
+        return Temporal.Instant.from(new Date(valueStr).toISOString());
       }
-      break;
+      return Temporal.Instant.from(valueStr);
     }
     case XSDNS.Double:
-      value = canonicalDouble(parseFloat(valueStr));
-      break;
+      return canonicalDouble(parseFloat(valueStr));
     default:
-      value = valueStr;
+      return valueStr;
   }
-  return value;
 };
 
 export const convertAnyToString = (v: unknown, datatype: string): string => {

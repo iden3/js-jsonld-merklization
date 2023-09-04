@@ -86,7 +86,7 @@ export class RDFEntry {
         switch (qo) {
           case NodeType.Literal:
             dataType = q?.object?.datatype?.value;
-            value = convertStringToXsdValue(dataType, qoVal);
+            value = convertStringToXsdValue(dataType, qoVal, hasher.prime());
 
             break;
           case NodeType.IRI:
