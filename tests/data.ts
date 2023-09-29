@@ -738,3 +738,42 @@ export const testDocumentIPFS = `{
     }
   ]
 }`;
+
+
+export const arr_test = `{
+    "@context": [
+      {
+        "@version": 1.1,
+        "@protected": true,
+        "id": "@id",
+        "type": "@type",
+        "CountriesList": {
+          "@id": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/complex-struct-v2.jsonld#ComplexTypeNotNested",
+          "@context": {
+            "@propagate": true,
+            "@protected": true,
+            "kyc-vocab": "https://github.com/iden3/claim-schema-vocab/blob/main/credentials/kyc.md#",
+            "xsd": "http://www.w3.org/2001/XMLSchema#",
+            "countries": {
+              "@id": "kyc-vocab:countries",
+              "@context": {
+                "code": {
+                  "@id": "kyc-vocab:code",
+                  "@type": "xsd:integer"
+                },
+                "name": {
+                  "@id": "kyc-vocab:name",
+                  "@type": "xsd:string"
+                }
+              }
+            }
+          }
+        }
+      }
+    ],
+    "@type":"CountriesList",
+    "countries": [
+      {"code":1 , "name":"abc"},
+      {"code":2 , "name":"def"}
+    ]
+  }`
