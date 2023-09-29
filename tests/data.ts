@@ -738,3 +738,42 @@ export const testDocumentIPFS = `{
     }
   ]
 }`;
+
+
+export const arr_test = `{
+    "@context": [
+      {
+        "@version": 1.1,
+        "@protected": true,
+        "id": "@id",
+        "type": "@type",
+        "CountriesList": {
+          "@id": "uuid:urn:87caf7a2-fee3-11ed-be56-0242ac120001",
+          "@context": {
+            "@propagate": true,
+            "@protected": true,
+            "polygon-vocab": "uuid:urn:87caf7a2-fee3-11ed-be56-0242ac120002#",
+            "xsd": "http://www.w3.org/2001/XMLSchema#",
+            "countries": {
+              "@id": "polygon-vocab:countries",
+              "@context": {
+                "code": {
+                  "@id": "polygon-vocab:code",
+                  "@type": "xsd:integer"
+                },
+                "name": {
+                  "@id": "polygon-vocab:name",
+                  "@type": "xsd:string"
+                }
+              }
+            }
+          }
+        }
+      }
+    ],
+    "@type":"CountriesList",
+    "countries": [
+      {"code":1 , "name":"abc"},
+      {"code":2 , "name":"def"}
+    ]
+  }`

@@ -6,6 +6,7 @@ import { RDFEntry } from './../src/lib/rdf-entry';
 import { RDFDataset } from './../src/lib/rdf-dataset';
 import {
   credentials_v1,
+  arr_test,
   kycschema_jsonld,
   doc1,
   multigraphDoc,
@@ -603,6 +604,36 @@ describe('tests merkelization', () => {
     const i = value?.asBigInt();
     expect(i).toEqual(19960424n);
   });
+
+  it('TestArrayMerklization', async () => {
+    const mz = await Merklizer.merklizeJSONLD(arr_test);
+
+    const expectedPath = new Path([
+      'uuid:urn:87caf7a2-fee3-11ed-be56-0242ac120002#countries',
+      0,
+      'uuid:urn:87caf7a2-fee3-11ed-be56-0242ac120002#code'
+    ]);
+
+    const mtProofEntry1 = await mz.proof(expectedPath);
+
+    expect(mtProofEntry1.proof.existence).toBe(true);
+    const i = mtProofEntry1.value?.asBigInt();
+    expect(i).toEqual(1n);
+
+
+    const expectedPath2 = new Path([
+      'uuid:urn:87caf7a2-fee3-11ed-be56-0242ac120002#countries',
+      1,
+      'uuid:urn:87caf7a2-fee3-11ed-be56-0242ac120002#code'
+    ]);
+
+   const mtEntryProof2 = await mz.proof(expectedPath2);
+
+    expect(mtEntryProof2.proof.existence).toBe(true);
+    const v = mtEntryProof2.value?.asBigInt();
+    expect(v).toEqual(2n);
+  });
+
 
   it('TestPathFromDocument', async () => {
     const inp = 'credentialSubject.1.birthDate';
