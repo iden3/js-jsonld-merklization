@@ -748,21 +748,21 @@ export const arr_test = `{
         "id": "@id",
         "type": "@type",
         "CountriesList": {
-          "@id": "https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/complex-struct-v2.jsonld#ComplexTypeNotNested",
+          "@id": "uuid:urn:87caf7a2-fee3-11ed-be56-0242ac120001",
           "@context": {
             "@propagate": true,
             "@protected": true,
-            "kyc-vocab": "https://github.com/iden3/claim-schema-vocab/blob/main/credentials/kyc.md#",
+            "polygon-vocab": "uuid:urn:87caf7a2-fee3-11ed-be56-0242ac120002#",
             "xsd": "http://www.w3.org/2001/XMLSchema#",
             "countries": {
-              "@id": "kyc-vocab:countries",
+              "@id": "polygon-vocab:countries",
               "@context": {
                 "code": {
-                  "@id": "kyc-vocab:code",
+                  "@id": "polygon-vocab:code",
                   "@type": "xsd:integer"
                 },
                 "name": {
-                  "@id": "kyc-vocab:name",
+                  "@id": "polygon-vocab:name",
                   "@type": "xsd:string"
                 }
               }

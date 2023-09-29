@@ -609,9 +609,9 @@ describe('tests merkelization', () => {
     const mz = await Merklizer.merklizeJSONLD(arr_test);
 
     const expectedPath = new Path([
-      'https://github.com/iden3/claim-schema-vocab/blob/main/credentials/kyc.md#countries',
+      'uuid:urn:87caf7a2-fee3-11ed-be56-0242ac120002#countries',
       0,
-      'https://github.com/iden3/claim-schema-vocab/blob/main/credentials/kyc.md#code'
+      'uuid:urn:87caf7a2-fee3-11ed-be56-0242ac120002#code'
     ]);
 
     const mtProofEntry1 = await mz.proof(expectedPath);
@@ -622,9 +622,9 @@ describe('tests merkelization', () => {
 
 
     const expectedPath2 = new Path([
-      'https://github.com/iden3/claim-schema-vocab/blob/main/credentials/kyc.md#countries',
+      'uuid:urn:87caf7a2-fee3-11ed-be56-0242ac120002#countries',
       1,
-      'https://github.com/iden3/claim-schema-vocab/blob/main/credentials/kyc.md#code'
+      'uuid:urn:87caf7a2-fee3-11ed-be56-0242ac120002#code'
     ]);
 
    const mtEntryProof2 = await mz.proof(expectedPath2);
