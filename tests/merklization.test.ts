@@ -26,7 +26,6 @@ import { MtValue } from '../src/lib/mt-value';
 import { Temporal } from '@js-temporal/polyfill';
 import { TestHasher } from './hasher';
 import { poseidon } from '@iden3/js-crypto';
-import { TextEncoder } from 'util';
 import { normalizeIPFSNodeURL } from '../src/loaders/jsonld-loader';
 import customSchemaJSON from './testdata/custom-schema.json';
 

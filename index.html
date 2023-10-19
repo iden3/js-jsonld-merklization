@@ -1,20 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible"
-        content="IE=edge">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
-    <script src="./dist/umd/index.js"></script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="./dist/browser/umd/index.js"></script>
     <title>Test</title>
-</head>
+    <script type="importmap">
+      {
+        "imports": {
+          "@iden3/js-crypto": "../node_modules/@iden3/js-crypto/dist/browser/esm/index.js",
+          "@iden3/js-merkletree": "../node_modules/@iden3/js-merkletree/dist/browser/esm/index.js"
+        }
+      }
+    </script>
+  </head>
 
-<body>
+  <body>
     Test browser
-</body>
-<script>
+  </body>
+  <script type="module">
     const multigraphDoc = `{
   "@context":[
     "https://www.w3.org/2018/credentials/v1",
@@ -28,27 +33,8 @@
     "birthday":19960425
   }
 }`;
-    const {
-        Merklizer,
-        Path
-    } = IdenMerklizer;
 
-    console.log(IdenMerklizer)
-
-    const run = async () => {
-
-        const mz = await Merklizer.merklizeJSONLD(multigraphDoc);
-
-        const path = await Path.fromDocument(null, multigraphDoc, 'verifiableCredential.birthday');
-
-        const val = await mz.rawValue(path);
-        console.assert(val === 19960425);
-    };
-    run().catch(console.error);
-</script>
-
-<script>
-const ipfsDocument = `{
+    const ipfsDocument = `{
   "@context": [
     "https://www.w3.org/2018/credentials/v1",
     "ipfs://QmdP4MZkESEabRVB322r2xWm7TCi7LueMNWMJawYmSy7hp",
@@ -78,19 +64,32 @@ const ipfsDocument = `{
   }
 }`;
 
-const runIPFS = async () => {
+    import * as esMerklizer from './dist/browser/esm/index.js';
+    const run = async (module) => {
+      const { Merklizer, Path } = module;
 
-    const opts = { ipfsGatewayURL: 'http://ipfs.io'}
-    const mz = await Merklizer.merklizeJSONLD(ipfsDocument, opts);
+      const mz = await Merklizer.merklizeJSONLD(multigraphDoc);
 
-    const path = await Path.fromDocument(null, ipfsDocument, 'credentialSubject.givenName', opts);
+      const path = await Path.fromDocument(null, multigraphDoc, 'verifiableCredential.birthday');
 
-    const val = await mz.rawValue(path);
-    console.assert(val === 'JOHN');
-};
-runIPFS().catch(console.error);
+      const val = await mz.rawValue(path);
+      console.assert(val === 19960425);
+    };
 
+    const runIPFS = async (module) => {
+      const { Merklizer, Path } = module;
 
-</script>
+      const opts = { ipfsGatewayURL: 'http://ipfs.io' };
+      const mz = await Merklizer.merklizeJSONLD(ipfsDocument, opts);
 
+      const path = await Path.fromDocument(null, ipfsDocument, 'credentialSubject.givenName', opts);
+
+      const val = await mz.rawValue(path);
+      console.assert(val === 'JOHN');
+    };
+    runIPFS(Iden3Merklizer).catch(console.error);
+    runIPFS(esMerklizer).catch(console.error);
+    run(Iden3Merklizer).catch(console.error);
+    run(esMerklizer).catch(console.error);
+  </script>
 </html>

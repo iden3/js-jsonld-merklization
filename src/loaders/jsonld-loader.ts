@@ -1,5 +1,4 @@
 import { RemoteDocument, Url } from 'jsonld/jsonld-spec';
-import http from 'http';
 import { parseLinkHeader } from 'jsonld/lib/util';
 import { LINK_HEADER_CONTEXT } from 'jsonld/lib/constants';
 import JsonLdError from 'jsonld/lib/JsonLdError';
@@ -49,10 +48,9 @@ export class JsonLDLoader {
     const doc = { contextUrl: null, documentUrl: url, document: body || null };
 
     // handle error
-    const statusText = http.STATUS_CODES[res.status];
     if (res.status >= 400) {
       throw new JsonLdError(
-        `URL "${url}" could not be dereferenced: ${statusText}`,
+        `URL "${url}" could not be dereferenced: ${res.statusText}`,
         'jsonld.InvalidUrl',
         {
           code: 'loading document failed',
