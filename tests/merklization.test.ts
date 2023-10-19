@@ -619,20 +619,18 @@ describe('tests merkelization', () => {
     const i = mtProofEntry1.value?.asBigInt();
     expect(i).toEqual(1n);
 
-
     const expectedPath2 = new Path([
       'uuid:urn:87caf7a2-fee3-11ed-be56-0242ac120002#countries',
       1,
       'uuid:urn:87caf7a2-fee3-11ed-be56-0242ac120002#code'
     ]);
 
-   const mtEntryProof2 = await mz.proof(expectedPath2);
+    const mtEntryProof2 = await mz.proof(expectedPath2);
 
     expect(mtEntryProof2.proof.existence).toBe(true);
     const v = mtEntryProof2.value?.asBigInt();
     expect(v).toEqual(2n);
   });
-
 
   it('TestPathFromDocument', async () => {
     const inp = 'credentialSubject.1.birthDate';
