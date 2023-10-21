@@ -67,7 +67,7 @@
   },
   "peerDependencies": {
     "@iden3/js-crypto": "1.0.2",
-    "@iden3/js-merkletree": "1.0.2"
+    "@iden3/js-merkletree": "1.1.0"
   },
   "dependencies": {
     "@js-temporal/polyfill": "^0.4.4",
