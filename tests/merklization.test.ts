@@ -28,10 +28,11 @@ import { TestHasher } from './hasher';
 import { poseidon } from '@iden3/js-crypto';
 import { normalizeIPFSNodeURL } from '../src/loaders/jsonld-loader';
 import customSchemaJSON from './testdata/custom-schema.json';
+import { cacheLoader } from './cache';
 
 describe('tests merkelization', () => {
   it('multigraph TestEntriesFromRDF', async () => {
-    const dataset = await RDFDataset.fromDocument(JSON.parse(multigraphDoc2));
+    const dataset = await RDFDataset.fromDocument(JSON.parse(multigraphDoc2), cacheLoader());
 
     const entries = await RDFEntry.fromDataSet(dataset, DEFAULT_HASHER);
 
@@ -90,7 +91,7 @@ describe('tests merkelization', () => {
   });
 
   it('TestEntriesFromRDF', async () => {
-    const dataSet = await RDFDataset.fromDocument(JSON.parse(testDocument));
+    const dataSet = await RDFDataset.fromDocument(JSON.parse(testDocument), cacheLoader());
     const entries = await RDFEntry.fromDataSet(dataSet, DEFAULT_HASHER);
     const wantEntries = [
       new RDFEntry(
@@ -371,7 +372,7 @@ describe('tests merkelization', () => {
   });
 
   it('test proof', async () => {
-    const dataSet = await RDFDataset.fromDocument(JSON.parse(testDocument));
+    const dataSet = await RDFDataset.fromDocument(JSON.parse(testDocument), cacheLoader());
     const entries = await RDFEntry.fromDataSet(dataSet, DEFAULT_HASHER);
 
     const mt = new Merkletree(new InMemoryDB(str2Bytes('')), true, 40);
@@ -401,7 +402,7 @@ describe('tests merkelization', () => {
   });
 
   it('TestProofInteger', async () => {
-    const dataSet = await RDFDataset.fromDocument(JSON.parse(testDocument));
+    const dataSet = await RDFDataset.fromDocument(JSON.parse(testDocument), cacheLoader());
     const entries = await RDFEntry.fromDataSet(dataSet, DEFAULT_HASHER);
     const mt = new Merkletree(new InMemoryDB(str2Bytes('')), true, 40);
 
@@ -446,7 +447,7 @@ describe('tests merkelization', () => {
 
   describe('TestMerklizer_Proof', () => {
     it('test Merklizer with path as a Path', async () => {
-      const mz = await Merklizer.merklizeJSONLD(testDocument);
+      const mz = await Merklizer.merklizeJSONLD(testDocument, { documentLoader: cacheLoader() });
       const path = new Path([
         'https://www.w3.org/2018/credentials#credentialSubject',
         1,
@@ -475,8 +476,10 @@ describe('tests merkelization', () => {
     });
 
     it('test Merklizer with path as shortcut string', async () => {
-      const mz = await Merklizer.merklizeJSONLD(testDocument);
-      const path = await mz.resolveDocPath('credentialSubject.1.birthCountry');
+      const mz = await Merklizer.merklizeJSONLD(testDocument, { documentLoader: cacheLoader() });
+      const path = await mz.resolveDocPath('credentialSubject.1.birthCountry', {
+        documentLoader: cacheLoader()
+      });
 
       const { proof, value } = await mz.proof(path);
 
@@ -587,8 +590,10 @@ describe('tests merkelization', () => {
   });
 
   it('TestExistenceProof', async () => {
-    const mz = await Merklizer.merklizeJSONLD(doc1);
-    const path = await mz.resolveDocPath('credentialSubject.birthday');
+    const mz = await Merklizer.merklizeJSONLD(doc1, { documentLoader: cacheLoader() });
+    const path = await mz.resolveDocPath('credentialSubject.birthday', {
+      documentLoader: cacheLoader()
+    });
 
     const wantPath = new Path([
       'https://www.w3.org/2018/credentials#credentialSubject',
@@ -605,7 +610,7 @@ describe('tests merkelization', () => {
   });
 
   it('TestArrayMerklization', async () => {
-    const mz = await Merklizer.merklizeJSONLD(arr_test);
+    const mz = await Merklizer.merklizeJSONLD(arr_test, { documentLoader: cacheLoader() });
 
     const expectedPath = new Path([
       'uuid:urn:87caf7a2-fee3-11ed-be56-0242ac120002#countries',
@@ -634,7 +639,9 @@ describe('tests merkelization', () => {
 
   it('TestPathFromDocument', async () => {
     const inp = 'credentialSubject.1.birthDate';
-    const result = await Path.fromDocument(null, testDocument, inp);
+    const result = await Path.fromDocument(null, testDocument, inp, {
+      documentLoader: cacheLoader()
+    });
 
     const want = new Path([
       'https://www.w3.org/2018/credentials#credentialSubject',
@@ -647,7 +654,9 @@ describe('tests merkelization', () => {
 
   it('TestPathFromDocument - path to nested field', async () => {
     const inp = 'objectField.customNestedField';
-    const result = await Path.fromDocument(null, nestedFieldDocument, inp);
+    const result = await Path.fromDocument(null, nestedFieldDocument, inp, {
+      documentLoader: cacheLoader()
+    });
 
     const want = new Path([
       'urn:uuid:87caf7a2-fee3-11ed-be56-0242ac120001#objectField',
@@ -658,9 +667,11 @@ describe('tests merkelization', () => {
   });
 
   it('TestMerklizer_RawValue', async () => {
-    const mz = await Merklizer.merklizeJSONLD(multigraphDoc);
+    const mz = await Merklizer.merklizeJSONLD(multigraphDoc, { documentLoader: cacheLoader() });
 
-    const path = await Path.fromDocument(null, multigraphDoc, 'verifiableCredential.birthday');
+    const path = await Path.fromDocument(null, multigraphDoc, 'verifiableCredential.birthday', {
+      documentLoader: cacheLoader()
+    });
 
     const val = await mz.rawValue(path);
     expect(val).toEqual(19960425);
@@ -1003,9 +1014,12 @@ describe('tests merkelization', () => {
       }
     }`;
 
-    const mz = await Merklizer.merklizeJSONLD(testPresentationDoc, { hasher: new TestHasher() });
+    const mz = await Merklizer.merklizeJSONLD(testPresentationDoc, {
+      hasher: new TestHasher(),
+      documentLoader: cacheLoader()
+    });
 
-    const p = await mz.resolveDocPath('credentialSubject');
+    const p = await mz.resolveDocPath('credentialSubject', { documentLoader: cacheLoader() });
 
     const { proof, value } = await mz.proof(p);
 
@@ -1036,7 +1050,9 @@ describe('tests merkelization', () => {
       }
     };
 
-    const mz = await Merklizer.merklizeJSONLD(JSON.stringify(testPresentationDoc));
+    const mz = await Merklizer.merklizeJSONLD(JSON.stringify(testPresentationDoc), {
+      documentLoader: cacheLoader()
+    });
 
     const testPresentationDoc2 = {
       id: 'uuid:presentation:12312',
@@ -1054,12 +1070,14 @@ describe('tests merkelization', () => {
       }
     };
 
-    const mz2 = await Merklizer.merklizeJSONLD(JSON.stringify(testPresentationDoc2));
+    const mz2 = await Merklizer.merklizeJSONLD(JSON.stringify(testPresentationDoc2), {
+      documentLoader: cacheLoader()
+    });
     expect((await mz.root()).toString()).toEqual((await mz2.root()).toString());
   });
 
   it('xsd:dateTime', async () => {
-    const mz = await Merklizer.merklizeJSONLD(testDocument);
+    const mz = await Merklizer.merklizeJSONLD(testDocument, { documentLoader: cacheLoader() });
 
     const path = new Path([
       'https://www.w3.org/2018/credentials#credentialSubject',
@@ -1072,7 +1090,7 @@ describe('tests merkelization', () => {
   });
 
   it('empty datatype', async () => {
-    const mz = await Merklizer.merklizeJSONLD(testDocument);
+    const mz = await Merklizer.merklizeJSONLD(testDocument, { documentLoader: cacheLoader() });
 
     const path = new Path([
       'https://www.w3.org/2018/credentials#credentialSubject',
@@ -1115,7 +1133,7 @@ describe('tests merkelization', () => {
     ];
 
     for (const tc of testCases) {
-      const result = await Merklizer.merklizeJSONLD(tc.doc);
+      const result = await Merklizer.merklizeJSONLD(tc.doc, { documentLoader: cacheLoader() });
       const root = await result.root();
       expect(root.bigInt().toString()).toEqual(tc.wantRoot.toString());
     }
@@ -1135,18 +1153,25 @@ describe('merklize document with ipfs context', () => {
   });
 
   it('ipfsNodeURL is set', async () => {
-    const mz: Merklizer = await Merklizer.merklizeJSONLD(ipfsDocument, {
-      ipfsNodeURL
-    });
+    const opts = {
+      documentLoader: cacheLoader({
+        ipfsNodeURL
+      })
+    };
+
+    const mz: Merklizer = await Merklizer.merklizeJSONLD(ipfsDocument, opts);
     expect((await mz.root()).bigInt().toString()).toEqual(
       '19309047812100087948241250053335720576191969395309912987389452441269932261840'
     );
   });
 
   it('ipfsGatewayURL is set', async () => {
-    const mz: Merklizer = await Merklizer.merklizeJSONLD(ipfsDocument, {
-      ipfsNodeURL
-    });
+    const opts = {
+      documentLoader: cacheLoader({
+        ipfsNodeURL
+      })
+    };
+    const mz: Merklizer = await Merklizer.merklizeJSONLD(ipfsDocument, opts);
     expect((await mz.root()).bigInt().toString()).toEqual(
       '19309047812100087948241250053335720576191969395309912987389452441269932261840'
     );
@@ -1160,7 +1185,9 @@ describe('merklize document with ipfs context', () => {
 
   it('TestExistenceProofIPFS', async () => {
     const opts = {
-      ipfsGatewayURL: 'https://ipfs.io'
+      documentLoader: cacheLoader({
+        ipfsGatewayURL: 'https://ipfs.io'
+      })
     };
     const mz = await Merklizer.merklizeJSONLD(testDocumentIPFS, opts);
     const path = await mz.resolveDocPath('credentialSubject.testNewTypeInt', opts);

@@ -1,6 +1,6 @@
 {
   "name": "@iden3/js-jsonld-merklization",
-  "version": "1.2.0",
+  "version": "1.1.0",
   "description": "json ld merklization library",
   "main": "./dist/node/cjs/index.js",
   "module": "./dist/node/esm/index.js",
@@ -67,7 +67,7 @@
   },
   "peerDependencies": {
     "@iden3/js-crypto": "1.0.2",
-    "@iden3/js-merkletree": "1.0.2"
+    "@iden3/js-merkletree": "1.1.0"
   },
   "dependencies": {
     "@js-temporal/polyfill": "^0.4.4",
