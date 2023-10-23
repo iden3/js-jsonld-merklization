@@ -1153,18 +1153,25 @@ describe('merklize document with ipfs context', () => {
   });
 
   it('ipfsNodeURL is set', async () => {
-    const mz: Merklizer = await Merklizer.merklizeJSONLD(ipfsDocument, {
-      ipfsNodeURL
-    });
+    const opts = {
+      documentLoader: cacheLoader({
+        ipfsNodeURL
+      })
+    };
+
+    const mz: Merklizer = await Merklizer.merklizeJSONLD(ipfsDocument, opts);
     expect((await mz.root()).bigInt().toString()).toEqual(
       '19309047812100087948241250053335720576191969395309912987389452441269932261840'
     );
   });
 
   it('ipfsGatewayURL is set', async () => {
-    const mz: Merklizer = await Merklizer.merklizeJSONLD(ipfsDocument, {
-      ipfsNodeURL
-    });
+    const opts = {
+      documentLoader: cacheLoader({
+        ipfsNodeURL
+      })
+    };
+    const mz: Merklizer = await Merklizer.merklizeJSONLD(ipfsDocument, opts);
     expect((await mz.root()).bigInt().toString()).toEqual(
       '19309047812100087948241250053335720576191969395309912987389452441269932261840'
     );
@@ -1176,9 +1183,11 @@ describe('merklize document with ipfs context', () => {
     );
   });
 
-  it('TestExistenceProofIPFS', async () => {
+  it.only('TestExistenceProofIPFS', async () => {
     const opts = {
-      ipfsGatewayURL: 'https://ipfs.io'
+      documentLoader: cacheLoader({
+        ipfsGatewayURL: 'https://ipfs.io'
+      })
     };
     const mz = await Merklizer.merklizeJSONLD(testDocumentIPFS, opts);
     const path = await mz.resolveDocPath('credentialSubject.testNewTypeInt', opts);
