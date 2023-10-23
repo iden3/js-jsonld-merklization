@@ -1183,7 +1183,7 @@ describe('merklize document with ipfs context', () => {
     );
   });
 
-  it.only('TestExistenceProofIPFS', async () => {
+  it('TestExistenceProofIPFS', async () => {
     const opts = {
       documentLoader: cacheLoader({
         ipfsGatewayURL: 'https://ipfs.io'
