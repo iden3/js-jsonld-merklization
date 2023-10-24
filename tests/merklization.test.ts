@@ -1178,9 +1178,9 @@ describe('merklize document with ipfs context', () => {
   });
 
   it('IPFS is not configured', async () => {
-    await expect(Merklizer.merklizeJSONLD(ipfsDocument)).rejects.toThrow(
-      'Dereferencing a URL did not result in a valid JSON-LD object'
-    );
+    await expect(
+      Merklizer.merklizeJSONLD(ipfsDocument, { documentLoader: cacheLoader() })
+    ).rejects.toThrow('Dereferencing a URL did not result in a valid JSON-LD object');
   });
 
   it('TestExistenceProofIPFS', async () => {
