@@ -33,8 +33,7 @@ const config = {
     {
       format: 'es',
       file: 'dist/browser/esm/index.js',
-      sourcemap: true,
-      banner: 'console.log("hello esm world")'
+      sourcemap: true
     }
   ],
   plugins: [
