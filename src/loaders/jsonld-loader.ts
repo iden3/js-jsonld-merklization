@@ -199,15 +199,7 @@ async function loadFromIPFSNode(url: string, ipfsNodeURL: string): Promise<Remot
   const { res, body } = await _fetch({ url: catRequestURL, method: 'POST' });
 
   if (res.status != 200) {
-    let errorBody: string;
-    try {
-      errorBody = await res.text();
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.warn(e);
-    }
-
-    throw new Error(`Error calling IPFS node: [${res.status}] ${res.statusText}\n${errorBody}`);
+    throw new Error(`Error calling IPFS node: [${res.status}] ${res.statusText}\n${body}`);
   }
 
   return {
