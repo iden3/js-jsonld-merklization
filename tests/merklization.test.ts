@@ -1144,8 +1144,14 @@ describe('merklize document with ipfs context', () => {
   // node --experimental-vm-modules node_modules/jest/bin/jest.js -t 'set kubo client' tests/merklization.test.ts
 
   const ipfsNodeURL = process.env.IPFS_URL ?? null;
+  const ipfsGatewayURL = process.env.IPFS_GATEWAY_URL ?? null;
+
   if (!ipfsNodeURL) {
-    throw new Error('IPFS_URL is not set, skipping IPFS Node test');
+    throw new Error('IPFS_URL is not set');
+  }
+
+  if (!ipfsGatewayURL) {
+    throw new Error('IPFS_GATEWAY_URL is not set');
   }
 
   beforeAll(async () => {
@@ -1168,7 +1174,7 @@ describe('merklize document with ipfs context', () => {
   it('ipfsGatewayURL is set', async () => {
     const opts = {
       documentLoader: cacheLoader({
-        ipfsNodeURL
+        ipfsGatewayURL
       })
     };
     const mz: Merklizer = await Merklizer.merklizeJSONLD(ipfsDocument, opts);
@@ -1186,7 +1192,7 @@ describe('merklize document with ipfs context', () => {
   it('TestExistenceProofIPFS', async () => {
     const opts = {
       documentLoader: cacheLoader({
-        ipfsGatewayURL: 'https://ipfs.io'
+        ipfsGatewayURL
       })
     };
     const mz = await Merklizer.merklizeJSONLD(testDocumentIPFS, opts);
@@ -1206,42 +1212,68 @@ describe('merklize document with ipfs context', () => {
 });
 
 async function pushSchemasToIPFS(ipfsNodeURL: string): Promise<void> {
-  const citizenshipData = await readFile('tests/testdata/citizenship-v1.jsonld');
-  const bbsData = await readFile('tests/testdata/dir1/dir2/bbs-v2.jsonld');
-  const formData = new FormData();
-  formData.append(
-    'file',
-    new Blob([citizenshipData], { type: 'application/octet-stream' }),
-    'citizenship-v1.jsonld'
-  );
-  formData.append(
-    'file',
-    new Blob([bbsData], { type: 'application/octet-stream' }),
-    'dir1/dir2/bbs-v2.jsonld'
-  );
-  let url: string | URL = normalizeIPFSNodeURL(ipfsNodeURL, 'add');
-  url = new URL(url);
-  let headers = {};
-  if (url.username && url.password) {
-    headers = {
-      authorization: `Basic ${btoa(url.username + ':' + url.password)}`
-    };
+  const getUrl = (uri: string, method: string): { url: string; headers: unknown } => {
+    const url: string | URL = new URL(normalizeIPFSNodeURL(uri, method));
+
+    const headers =
+      url.username && url.password
+        ? {
+            authorization: `Basic ${btoa(url.username + ':' + url.password)}`
+          }
+        : {};
     url.username = '';
     url.password = '';
+
+    return { url: url.toString(), headers };
+  };
+
+  const { url: catUrl, headers } = getUrl(ipfsNodeURL, 'cat');
+  const catOpts = { headers, method: 'POST' };
+
+  try {
+    const cat = await Promise.all([
+      fetch(`${catUrl}?arg=QmdP4MZkESEabRVB322r2xWm7TCi7LueMNWMJawYmSy7hp`, {
+        ...catOpts
+      } as RequestInit).then((r) => r.text()),
+      fetch(`${catUrl}?arg=Qmbp4kwoHULnmK71abrxdksjPH5sAjxSAXU5PEp2XRMFNw/dir2/bbs-v2.jsonld`, {
+        ...catOpts
+      } as RequestInit).then((r) => r.text())
+    ]);
+    const records = cat.map((r) => JSON.parse(r)['@context']).filter(Boolean);
+    if (records.length !== 2) {
+      throw new Error('IPFS records not found');
+    }
+  } catch (e) {
+    console.warn('try to upload document', e);
+    const citizenshipData = await readFile('tests/testdata/citizenship-v1.jsonld');
+    const bbsData = await readFile('tests/testdata/dir1/dir2/bbs-v2.jsonld');
+    const formData = new FormData();
+    formData.append(
+      'file',
+      new Blob([citizenshipData], { type: 'application/octet-stream' }),
+      'citizenship-v1.jsonld'
+    );
+    formData.append(
+      'file',
+      new Blob([bbsData], { type: 'application/octet-stream' }),
+      'dir1/dir2/bbs-v2.jsonld'
+    );
+    const { url: addUrl, headers: addHeaders } = getUrl(ipfsNodeURL, 'add');
+
+    const res = await fetch(addUrl, {
+      method: 'POST',
+      body: formData,
+      headers: addHeaders as HeadersInit
+    });
+    const resBody = await res.text();
+    const records = resBody
+      .split('\n')
+      .filter((l) => l.trim().length > 0)
+      .map((l) => JSON.parse(l).Hash);
+    // Check that URLs from ipfsDocument are uploaded to IPFS
+    expect(records).toContain('QmdP4MZkESEabRVB322r2xWm7TCi7LueMNWMJawYmSy7hp');
+    expect(records).toContain('Qmbp4kwoHULnmK71abrxdksjPH5sAjxSAXU5PEp2XRMFNw');
   }
-  const res = await fetch(url, {
-    method: 'POST',
-    body: formData,
-    headers
-  });
-  const resBody = await res.text();
-  const records = resBody
-    .split('\n')
-    .filter((l) => l.trim().length > 0)
-    .map((l) => JSON.parse(l).Hash);
-  // Check that URLs from ipfsDocument are uploaded to IPFS
-  expect(records).toContain('QmdP4MZkESEabRVB322r2xWm7TCi7LueMNWMJawYmSy7hp');
-  expect(records).toContain('Qmbp4kwoHULnmK71abrxdksjPH5sAjxSAXU5PEp2XRMFNw');
 }
 
 function strHash(str: string): string {

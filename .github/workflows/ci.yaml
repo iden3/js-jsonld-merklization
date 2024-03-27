@@ -51,4 +51,5 @@ jobs:
       - name: Run Tests
         env:
           IPFS_URL: ${{ secrets.IPFS_URL }}
+          IPFS_GATEWAY_URL: ${{ secrets.IPFS_GATEWAY_URL }}
         run: npm run test
