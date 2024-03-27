@@ -1144,18 +1144,24 @@ describe('merklize document with ipfs context', () => {
   // node --experimental-vm-modules node_modules/jest/bin/jest.js -t 'set kubo client' tests/merklization.test.ts
 
   const ipfsNodeURL = process.env.IPFS_URL ?? null;
+  const ipfsGatewayURL = process.env.IPFS_GATEWAY_URL ?? null;
+
   if (!ipfsNodeURL) {
-    throw new Error('IPFS_URL is not set, skipping IPFS Node test');
+    throw new Error('IPFS_URL is not set');
+  }
+
+  if (!ipfsGatewayURL) {
+    throw new Error('IPFS_GATEWAY_URL is not set');
   }
 
   beforeAll(async () => {
     await pushSchemasToIPFS(ipfsNodeURL);
   });
 
-  it('ipfs gateway is set', async () => {
+  it('ipfsNodeURL is set', async () => {
     const opts = {
       documentLoader: cacheLoader({
-        ipfsGatewayURL: process.env.IPFS_GATEWAY_URL
+        ipfsNodeURL
       })
     };
 
@@ -1168,7 +1174,7 @@ describe('merklize document with ipfs context', () => {
   it('ipfsGatewayURL is set', async () => {
     const opts = {
       documentLoader: cacheLoader({
-        ipfsGatewayURL: process.env.IPFS_GATEWAY_URL
+        ipfsGatewayURL
       })
     };
     const mz: Merklizer = await Merklizer.merklizeJSONLD(ipfsDocument, opts);
@@ -1186,7 +1192,7 @@ describe('merklize document with ipfs context', () => {
   it('TestExistenceProofIPFS', async () => {
     const opts = {
       documentLoader: cacheLoader({
-        ipfsGatewayURL: process.env.IPFS_GATEWAY_URL
+        ipfsGatewayURL
       })
     };
     const mz = await Merklizer.merklizeJSONLD(testDocumentIPFS, opts);
@@ -1217,7 +1223,6 @@ async function pushSchemasToIPFS(ipfsNodeURL: string): Promise<void> {
         : {};
     url.username = '';
     url.password = '';
-    console.log('url', url.toString());
 
     return { url: url.toString(), headers };
   };
@@ -1238,7 +1243,6 @@ async function pushSchemasToIPFS(ipfsNodeURL: string): Promise<void> {
     if (records.length !== 2) {
       throw new Error('IPFS records not found');
     }
-    console.log('records', records);
   } catch (e) {
     console.warn('try to upload document', e);
     const citizenshipData = await readFile('tests/testdata/citizenship-v1.jsonld');
