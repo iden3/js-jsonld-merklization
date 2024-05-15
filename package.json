@@ -41,7 +41,7 @@
     "url": "git+https://github.com/iden3/js-jsonld-merklization.git"
   },
   "author": "",
-  "license": "AGPL-3.0",
+  "license": "MIT or Apache-2.0",
   "bugs": {
     "url": "https://github.com/iden3/js-jsonld-merklization/issues"
   },
