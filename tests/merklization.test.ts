@@ -7,7 +7,7 @@ import { RDFDataset } from './../src/lib/rdf-dataset';
 import {
   credentials_v1,
   arr_test,
-  kycschema_jsonld,
+  kycSchema_jsonld,
   doc1,
   multigraphDoc,
   multigraphDoc2,
@@ -427,7 +427,7 @@ describe('tests merklization', () => {
   it('TestTypeIDFromContext', async () => {
     const testCases = [
       {
-        data: kycschema_jsonld,
+        data: kycSchema_jsonld,
         typeName: 'KYCCountryOfResidenceCredential',
         expectedType:
           'https://raw.githubusercontent.com/iden3/claim-schema-vocab/main/schemas/json-ld/kyc-v4.json-ld#KYCCountryOfResidenceCredential'
@@ -538,7 +538,7 @@ describe('tests merklization', () => {
   it('TestFieldPathFromContext', async () => {
     const typ = 'KYCAgeCredential';
     const fieldPath = 'birthday';
-    const result = await Path.getContextPathKey(kycschema_jsonld, typ, fieldPath);
+    const result = await Path.getContextPathKey(kycSchema_jsonld, typ, fieldPath);
     const want = new Path([
       'https://github.com/iden3/claim-schema-vocab/blob/main/credentials/kyc.md#birthday'
     ]);
@@ -679,7 +679,7 @@ describe('tests merklization', () => {
 
   it('TestTypeFromContext', async () => {
     const input = 'KYCAgeCredential.birthday';
-    const typ = await Path.newTypeFromContext(kycschema_jsonld, input);
+    const typ = await Path.newTypeFromContext(kycSchema_jsonld, input);
     expect(typ).toEqual('http://www.w3.org/2001/XMLSchema#integer');
   });
 
@@ -835,7 +835,7 @@ describe('tests merklization', () => {
     ];
 
     for (const tc of testCases) {
-      const ldContext = tc.ctxJSON ?? kycschema_jsonld;
+      const ldContext = tc.ctxJSON ?? kycSchema_jsonld;
 
       const typ = await Path.newTypeFromContext(ldContext, tc.pathToField);
       expect(typ).toEqual(tc.datatype);
