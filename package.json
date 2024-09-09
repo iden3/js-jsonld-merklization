@@ -30,8 +30,8 @@
     "test:coverage": "jest --coverage",
     "test": "node node_modules/jest/bin/jest.js",
     "test:watch": "jest --watch",
-    "lint": "eslint --fix --ext .js,.ts src/**",
-    "lint:check": "eslint --ext .js,.ts src/**",
+    "lint": "eslint --fix --ext .js,.ts src/** tests/*.ts",
+    "lint:check": "eslint --ext .js,.ts src/** tests/*.ts",
     "format": "prettier --config .prettierrc './**/*.ts' --write",
     "format:check": "prettier --config .prettierrc './**/*.ts' --check",
     "check-deps": "madge --circular --extensions ts ./"
@@ -47,6 +47,7 @@
   },
   "homepage": "https://github.com/iden3/js-jsonld-merklization#readme",
   "devDependencies": {
+    "@cspell/eslint-plugin": "^8.14.2",
     "@iden3/eslint-config": "https://github.com/iden3/eslint-config",
     "@rollup/plugin-commonjs": "^25.0.4",
     "@rollup/plugin-node-resolve": "^15.2.1",

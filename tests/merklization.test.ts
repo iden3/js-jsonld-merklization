@@ -30,7 +30,7 @@ import { normalizeIPFSNodeURL } from '../src/loaders/jsonld-loader';
 import customSchemaJSON from './testdata/custom-schema.json';
 import { cacheLoader } from './cache';
 
-describe('tests merkelization', () => {
+describe('tests merklization', () => {
   it('multigraph TestEntriesFromRDF', async () => {
     const dataset = await RDFDataset.fromDocument(JSON.parse(multigraphDoc2), cacheLoader());
 
@@ -136,7 +136,7 @@ describe('tests merkelization', () => {
           0,
           'http://schema.org/image'
         ]),
-        'data:image/png;base64,iVBORw0KGgokJggg==',
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII',
         ''
       ),
       new RDFEntry(
@@ -246,7 +246,7 @@ describe('tests merkelization', () => {
           1,
           'http://schema.org/image'
         ]),
-        'data:image/png;base64,iVBORw0KGgokJggg==',
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII',
         ''
       ),
       new RDFEntry(

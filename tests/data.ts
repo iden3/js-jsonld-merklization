@@ -91,7 +91,7 @@ export const testDocument = `{
       "givenName": "JOHN",
       "familyName": "SMITH",
       "gender": "Male",
-      "image": "data:image/png;base64,iVBORw0KGgokJggg==",
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII",
       "residentSince": "2015-01-01",
       "lprCategory": "C09",
       "lprNumber": "999-999-999",
@@ -105,7 +105,7 @@ export const testDocument = `{
       "givenName": "JOHN",
       "familyName": "SMITH",
       "gender": "Male",
-      "image": "data:image/png;base64,iVBORw0KGgokJggg==",
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII",
       "residentSince": "2015-01-01",
       "lprCategory": "C09",
       "lprNumber": "999-999-999",
@@ -401,7 +401,7 @@ export const credentials_v1 = `
   }
 }`;
 
-export const kycschema_jsonld = `{
+export const kycSchema_jsonld = `{
   "@context": [
     {
       "@version": 1.1,
@@ -533,7 +533,7 @@ export const ipfsDocument = `{
       "givenName": "JOHN",
       "familyName": "SMITH",
       "gender": "Male",
-      "image": "data:image/png;base64,iVBORw0KGgokJggg==",
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII",
       "residentSince": "2015-01-01",
       "lprCategory": "C09",
       "lprNumber": "999-999-999",
@@ -547,7 +547,7 @@ export const ipfsDocument = `{
       "givenName": "JOHN",
       "familyName": "SMITH",
       "gender": "Male",
-      "image": "data:image/png;base64,iVBORw0KGgokJggg==",
+      "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII",
       "residentSince": "2015-01-01",
       "lprCategory": "C09",
       "lprNumber": "999-999-999",
