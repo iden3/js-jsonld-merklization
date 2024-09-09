@@ -136,7 +136,7 @@ describe('tests merklization', () => {
           0,
           'http://schema.org/image'
         ]),
-        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII',
+        'data:image/png;base64,iVBORw0KGgokJggg==',
         ''
       ),
       new RDFEntry(
@@ -246,7 +246,7 @@ describe('tests merklization', () => {
           1,
           'http://schema.org/image'
         ]),
-        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII',
+        'data:image/png;base64,iVBORw0KGgokJggg==',
         ''
       ),
       new RDFEntry(

@@ -10,7 +10,7 @@ module.exports = {
         ...spellcheckerRule,
         cspell: {
           ...cspellConfig,
-          ignoreWords: ['multigraph', 'kubo']
+          ignoreWords: ['multigraph', 'kubo', 'Ggok', 'Jggg']
         }
       }
     ]
