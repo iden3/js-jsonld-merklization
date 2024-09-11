@@ -401,7 +401,7 @@ export const credentials_v1 = `
   }
 }`;
 
-export const kycschema_jsonld = `{
+export const kycSchema_jsonld = `{
   "@context": [
     {
       "@version": 1.1,
