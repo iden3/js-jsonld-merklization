@@ -1,6 +1,6 @@
 {
   "name": "@iden3/js-jsonld-merklization",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "json ld merklization library",
   "main": "./dist/node/cjs/index.js",
   "module": "./dist/node/esm/index.js",
