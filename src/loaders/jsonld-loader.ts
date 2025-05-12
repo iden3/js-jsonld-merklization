@@ -45,7 +45,7 @@ export class JsonLDLoader {
     let alternate = null;
 
     const { res, body } = await _fetch({ url });
-    const doc = { contextUrl: null, documentUrl: url, document: body || null };
+    const doc = { contextUrl: undefined, documentUrl: url, document: body || null };
 
     // handle error
     if (res.status >= 400) {
@@ -129,7 +129,7 @@ export class JsonLDLoader {
     for(let i = 0; i < redirects.length; ++i) {
       cache.set(
         redirects[i],
-        {contextUrl: null, documentUrl: redirects[i], document: body});
+        {contextUrl: undefined, documentUrl: redirects[i], document: body});
     }
     */
 
@@ -203,7 +203,7 @@ async function loadFromIPFSNode(url: string, ipfsNodeURL: string): Promise<Remot
   }
 
   return {
-    contextUrl: null,
+    contextUrl: undefined,
     document: body || null,
     documentUrl: ipfsURLPrefix + url
   };
