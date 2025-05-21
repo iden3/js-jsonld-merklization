@@ -1,3 +1,4 @@
+// @ts-ignore-next-line
 import { Quad } from 'n3';
 import { NodeType } from './types/types';
 

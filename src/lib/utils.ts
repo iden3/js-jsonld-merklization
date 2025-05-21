@@ -1,4 +1,5 @@
 /* eslint-disable no-case-declarations */
+// @ts-ignore-next-line
 import { Quad } from 'n3';
 import { MerklizationConstants } from './constants';
 import { canonicalDouble, Value, XSDNS } from './types/types';

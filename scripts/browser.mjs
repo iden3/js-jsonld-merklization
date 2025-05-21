@@ -3,7 +3,6 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
 import tsConfig from '../tsconfig.json' with { type: 'json' };
 import packageJson from '../package.json' with { type: 'json' };
-import terser from '@rollup/plugin-terser';
 import { fileURLToPath } from 'url';
 import { resolve, dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
@@ -12,6 +11,15 @@ const __dirname = dirname(__filename);
 const external = [
   ...Object.keys(packageJson.peerDependencies).filter((key) => key.startsWith('@iden3/'))
 ];
+
+const compilerOptions = {
+  ...tsConfig.compilerOptions,
+  outDir: undefined,
+  declarationDir: undefined,
+  declaration: undefined,
+  sourceMap: undefined,
+  declarationMap: undefined,
+};
 
 const replaceModuleLocation = {
   name: 'replaceModuleLocation',
@@ -38,9 +46,7 @@ const config = {
   ],
   plugins: [
     typescript({
-      compilerOptions: {
-        ...tsConfig.compilerOptions
-      }
+      compilerOptions
     }),
     replaceModuleLocation,
     commonJS(),
@@ -48,7 +54,6 @@ const config = {
       browser: true,
       preferBuiltins: false
     }),
-    terser()
   ],
 
   treeshake: {
