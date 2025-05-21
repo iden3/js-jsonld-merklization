@@ -1,5 +1,11 @@
 import { Hasher, Value, Options } from './types/types';
-import { compact, NodeObject } from 'jsonld';
+import {
+  compact,
+  NodeObject,
+  JsonLdDocument,
+  ContextDefinition,
+  Options as JsonLdOptions
+} from 'jsonld';
 import { Merkletree, Hash, Proof } from '@iden3/js-merkletree';
 import { RDFDataset } from './rdf-dataset';
 import { DEFAULT_HASHER } from './poseidon';
@@ -27,6 +33,9 @@ export class Merklizer {
 
   async proof(p: Path): Promise<{ proof: Proof; value?: MtValue }> {
     const kHash = await p.mtEntry();
+    if (!this.mt) {
+      throw new Error('Merkle tree is not initialized');
+    }
     const { proof } = await this.mt.generateProof(kHash);
 
     if (proof.existence) {
@@ -34,6 +43,9 @@ export class Merklizer {
         throw new Error('error: [assertion] no entry found while existence is true');
       }
       const entry = this.entries.get(kHash.toString());
+      if (!entry) {
+        throw new Error('entry not found');
+      }
 
       const value = new MtValue(entry.value, this.hasher);
       return { proof, value };
@@ -47,6 +59,9 @@ export class Merklizer {
   }
 
   async resolveDocPath(path: string, opts?: Options): Promise<Path> {
+    if (!this.srcDoc) {
+      throw new Error('Source document is not initialized');
+    }
     const realPath = await Path.fromDocument(null, this.srcDoc, path, opts);
     realPath.hasher = this.hasher;
     return realPath;
@@ -70,12 +85,18 @@ export class Merklizer {
   }
 
   async root(): Promise<Hash> {
+    if (!this.mt) {
+      throw new Error('Merkle tree is not initialized');
+    }
     return this.mt.root();
   }
 
   rawValue(path: Path): Value {
     let parts = path.parts;
-    let obj: unknown = this.compacted;
+    if (!this.compacted) {
+      throw new Error('Compact document is not initialized');
+    }
+    let obj: NodeObject = this.compacted;
     const traversedParts: string[] = [];
     const currentPath = (): string => traversedParts.join(' / ');
 
@@ -83,13 +104,13 @@ export class Merklizer {
       const p = parts[0];
       if (typeof p === 'string') {
         traversedParts.push(p);
-        obj = obj[p] ?? obj['@graph'][p];
+        obj = (obj[p] ?? ((obj['@graph'] ?? {}) as NodeObject)[p]) as NodeObject;
         if (!obj) {
           throw new Error('value not found');
         }
       } else if (typeof p === 'number') {
         traversedParts.push(p.toString());
-        obj = this.rvExtractArrayIdx(obj, p);
+        obj = this.rvExtractArrayIdx(obj, p) as NodeObject;
       } else {
         throw new Error(`unexpected type of path ${currentPath()}`);
       }
@@ -97,10 +118,10 @@ export class Merklizer {
     }
 
     if (typeof obj['@value'] !== 'undefined') {
-      return obj['@value'];
+      return obj['@value'] as Value;
     }
 
-    return obj as Value;
+    return obj as unknown as Value;
   }
 
   private rvExtractArrayIdx(obj: unknown, idx: number): unknown {
@@ -118,6 +139,12 @@ export class Merklizer {
     const hasher = getHasher(opts);
     const documentLoader = getDocumentLoader(opts);
     const mz = new Merklizer(docStr, null, hasher, new Map(), null, documentLoader);
+    if (!mz) {
+      throw new Error('Merklizer is not initialized');
+    }
+    if (!mz.srcDoc) {
+      throw new Error('Source document is not initialized');
+    }
     const doc = JSON.parse(mz.srcDoc);
     const dataset = await RDFDataset.fromDocument(doc, documentLoader);
     const entries = await RDFEntry.fromDataSet(dataset, hasher);
@@ -127,12 +154,20 @@ export class Merklizer {
       mz.entries.set(k.toString(), e);
     }
 
+    if (!mz.mt) {
+      throw new Error('Merkle tree is not initialized');
+    }
     await addEntriesToMerkleTree(mz.mt, entries);
-
+    // input: JsonLdDocument, ctx?: ContextDefinition, options?: Options.Compact
     mz.compacted = await compact(
-      doc,
-      {},
-      { documentLoader, base: null, compactArrays: true, compactToRelative: true }
+      doc as JsonLdDocument,
+      {} as ContextDefinition,
+      {
+        documentLoader,
+        base: null,
+        compactArrays: true,
+        compactToRelative: true
+      } as unknown as JsonLdOptions.Compact
     );
 
     return mz;

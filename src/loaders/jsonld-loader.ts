@@ -1,7 +1,11 @@
-import { RemoteDocument, Url } from 'jsonld/jsonld-spec';
+import { JsonLd, RemoteDocument, Url } from 'jsonld/jsonld-spec';
+// @ts-ignore-next-line
 import { parseLinkHeader } from 'jsonld/lib/util';
+// @ts-ignore-next-line
 import { LINK_HEADER_CONTEXT } from 'jsonld/lib/constants';
+// @ts-ignore-next-line
 import JsonLdError from 'jsonld/lib/JsonLdError';
+// @ts-ignore-next-line
 import { prependBase } from 'jsonld/lib/url';
 
 /**
@@ -25,7 +29,7 @@ import { prependBase } from 'jsonld/lib/url';
  * @return the node document loader.
  */
 export class JsonLDLoader {
-  async loadDocument(url: string, redirects: string[] = []) {
+  async loadDocument(url: string, redirects: string[] = []): Promise<RemoteDocument> {
     const isHttp = url.startsWith('http:');
     const isHttps = url.startsWith('https:');
     if (!isHttp && !isHttps) {
@@ -133,7 +137,7 @@ export class JsonLDLoader {
     }
     */
 
-    return doc;
+    return doc as RemoteDocument;
   }
 }
 
@@ -173,8 +177,8 @@ function buildIpfsGatewayURL(ipfsGatewayURL: string, documentURL: string): strin
 
 async function loadIPFS(
   url: string,
-  ipfsNodeURL: string,
-  ipfsGatewayURL: string
+  ipfsNodeURL: string | undefined = undefined,
+  ipfsGatewayURL: string | undefined = undefined
 ): Promise<RemoteDocument> {
   const documentURL = ipfsURLPrefix + url;
 
@@ -185,7 +189,7 @@ async function loadIPFS(
     });
   }
 
-  if (ipfsNodeURL !== null) {
+  if (ipfsNodeURL) {
     return await loadFromIPFSNode(url, ipfsNodeURL);
   } else {
     return await loadFromIPFSGateway(url, ipfsGatewayURL);
@@ -204,21 +208,33 @@ async function loadFromIPFSNode(url: string, ipfsNodeURL: string): Promise<Remot
 
   return {
     contextUrl: undefined,
-    document: body || null,
+    document: (body as JsonLd) || null,
     documentUrl: ipfsURLPrefix + url
   };
 }
 
-async function loadFromIPFSGateway(url: string, ipfsGatewayURL: string): Promise<RemoteDocument> {
+async function loadFromIPFSGateway(
+  url: string,
+  ipfsGatewayURL: string | undefined = undefined
+): Promise<RemoteDocument> {
+  if (!ipfsGatewayURL) {
+    throw new JsonLdError('IPFS gateway is not configured', 'jsonld.IPFSNotConfigured', {
+      code: 'loading document failed',
+      url: ipfsURLPrefix + url
+    });
+  }
   const loader = new JsonLDLoader();
   const document = await loader.loadDocument(buildIpfsGatewayURL(ipfsGatewayURL, url), []);
-  document.contextUrl = null;
+  document.contextUrl = undefined;
   document.documentUrl = ipfsURLPrefix + url;
   return document;
 }
 
-async function _fetch({ url, method }: { url: string | URL; method?: string }) {
-  const options = {};
+async function _fetch({ url, method }: { url: string | URL; method?: string }): Promise<{
+  res: Response;
+  body: unknown;
+}> {
+  const options: Record<string, unknown> = {};
   if (typeof method !== 'undefined') {
     options['method'] = method;
   }
@@ -241,11 +257,11 @@ async function _fetch({ url, method }: { url: string | URL; method?: string }) {
       return { res, body: JSON.parse(text) };
     }
     return { res, body: text };
-  } catch (e) {
+  } catch (e: unknown) {
     // HTTP errors have a response in them
     // ky considers redirects HTTP errors
-    if (e.response) {
-      return { res: e.response, body: null };
+    if (e instanceof Error && 'response' in e) {
+      return { res: e.response as Response, body: null };
     }
     throw new JsonLdError(
       'URL could not be dereferenced, an error occurred.',
@@ -266,8 +282,8 @@ export type DocumentLoader = (url: Url) => Promise<RemoteDocument>;
 const ipfsURLPrefix = 'ipfs://';
 
 export const getJsonLdDocLoader = (
-  ipfsNodeURL: string = null,
-  ipfsGatewayURL: string = null
+  ipfsNodeURL: string | undefined = undefined,
+  ipfsGatewayURL: string | undefined = undefined
 ): DocumentLoader => {
   return async (url: Url): Promise<RemoteDocument> => {
     if (url.startsWith(ipfsURLPrefix)) {
