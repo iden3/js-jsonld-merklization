@@ -61,12 +61,12 @@ export class Path {
           throw MerklizationConstants.ERRORS.TERM_IS_NOT_DEFINED;
         }
 
-        const id = m['@id'];
+        const id = (m as { '@id': string | undefined })['@id'];
         if (!id) {
           throw MerklizationConstants.ERRORS.NO_ID_ATTR;
         }
 
-        const nextCtx = m['@context'];
+        const nextCtx = (m as { '@context': string | undefined })['@context'];
         if (nextCtx) {
           parsedCtx = await processContext(parsedCtx, m, jsonldOpts);
         }
@@ -107,8 +107,8 @@ export class Path {
       rval = defaultT as string;
     }
     const propDef = ctx.mappings.get(prop);
-    if (propDef && propDef['@type']) {
-      rval = propDef['@type'] as string;
+    if (propDef && (propDef as { '@type': string | undefined })['@type']) {
+      rval = (propDef as { '@type': string | undefined })['@type'] as string;
     }
     return rval;
   }
@@ -171,33 +171,34 @@ export class Path {
     for (const k in elemKeys) {
       const key = elemKeys[k];
       if (key !== '@type') {
-        const keyCtx = ldCTX.mappings.get(key);
+        const keyCtx = ldCTX?.mappings.get(key);
         if (typeof keyCtx !== 'object') {
           continue;
         }
-        if (keyCtx['@id'] !== '@type') {
+        if ((keyCtx as { '@id': string | undefined })['@id'] !== '@type') {
           continue;
         }
       }
 
       let types: string[] = [];
 
-      if (Array.isArray(doc[key])) {
-        doc[key].forEach((e) => {
+      const docKey = (doc as Record<string, unknown>)[key];
+      if (Array.isArray(docKey)) {
+        docKey.forEach((e) => {
           if (typeof e !== 'string') {
             throw new Error(`error: @type value must be an array of strings: ${typeof e}`);
           }
           types.push(e as string);
           types = sortArr(types);
         });
-      } else if (typeof doc[key] === 'string') {
-        types.push(doc[key]);
+      } else if (typeof docKey === 'string') {
+        types.push(docKey);
       } else {
-        throw new Error(`error: unexpected @type field type: ${typeof doc[key]}`);
+        throw new Error(`error: unexpected @type field type: ${typeof docKey}`);
       }
 
       for (const tt of types) {
-        const td = typedScopedCtx.mappings.get(tt);
+        const td = typedScopedCtx?.mappings.get(tt);
         if (typeof td === 'object' && '@context' in td) {
           ldCTX = await processContext(ldCTX, td as JsonLdDocument, jsonldOpts);
         }
@@ -215,7 +216,13 @@ export class Path {
         ldCTX = await processContext(emptyCtx, expTerm.typeDef, jsonldOpts);
       }
     }
-    const moreParts = await Path.pathFromDocument(ldCTX, doc[term], newPathParts, true, opts);
+    const moreParts = await Path.pathFromDocument(
+      ldCTX,
+      (doc as Record<string, JsonLdDocument>)[term] as JsonLdDocument,
+      newPathParts,
+      true,
+      opts
+    );
 
     return [expTerm['@id'], ...moreParts];
   }
@@ -284,7 +291,7 @@ export class Path {
       throw new Error(`looks like ${typeName} is not a type`);
     }
 
-    const typeID = typeDef['@id'];
+    const typeID = (typeDef as { '@id': string | undefined })['@id'];
     if (!typeID) {
       throw new Error(`@id attribute is not found for type ${typeName}`);
     }
@@ -304,13 +311,13 @@ interface CtxTypeAttrs {
   typeDef: object;
 }
 
-function expandType(ctx: ParsedCtx, term: string): CtxTypeAttrs {
-  const m = ctx.mappings.get(term);
+function expandType(ctx: ParsedCtx | null, term: string): CtxTypeAttrs {
+  const m = ctx?.mappings.get(term);
   if (typeof m !== 'object') {
     throw MerklizationConstants.ERRORS.TERM_IS_NOT_DEFINED;
   }
 
-  const id = m['@id'];
+  const id = (m as { '@id': string | undefined })['@id'];
   if (!id) {
     throw MerklizationConstants.ERRORS.NO_ID_ATTR;
   }

@@ -1,4 +1,5 @@
 import { MerklizationConstants } from './constants';
+// @ts-ignore-next-line
 import { Quad, Parser } from 'n3';
 import { canonize, JsonLdDocument } from 'jsonld';
 import { DocumentLoader } from '../loaders/jsonld-loader';
@@ -73,7 +74,9 @@ export class RDFDataset {
 
     for (const graphName of graphNames) {
       const quads = ds.graphs.get(graphName);
-
+      if (!quads) {
+        continue;
+      }
       callback(graphName, quads);
     }
   }
@@ -137,7 +140,7 @@ export class RDFDataset {
     }
 
     let found = false;
-    let result: DatasetIdx;
+    let result: DatasetIdx | undefined;
     for (const [graphName, quads] of ds.graphs) {
       for (let idx = 0; idx < quads.length; idx++) {
         const quad = quads[idx];
@@ -163,8 +166,7 @@ export class RDFDataset {
 
     if (found) {
       return result;
-    } else {
-      throw MerklizationConstants.ERRORS.PARENT_NOT_FOUND;
     }
+    throw MerklizationConstants.ERRORS.PARENT_NOT_FOUND;
   }
 }

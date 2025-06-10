@@ -977,7 +977,7 @@ describe('tests merklization', () => {
         pathToField: 'KYCEmployee.hireDate',
         datatype: 'http://www.w3.org/2001/XMLSchema#dateTime',
         value: '01-01-2019',
-        wantErr: 'invalid ISO 8601 string: 01-01-2019'
+        wantErr: 'invalid RFC 9557 string: 01-01-2019'
       },
       {
         name: 'unknown datatype',

@@ -1,4 +1,5 @@
 import { Hasher, NodeType } from './types/types';
+// @ts-ignore-next-line
 import { Quad } from 'n3';
 import { Path } from './path';
 import { RefTp } from './ref-tp';
@@ -83,7 +84,7 @@ export class Relationship {
         const parentQuad = RDFDataset.getQuad(ds, parentIdx);
         const qKey = new QuadArrKey(parentQuad);
         //string here is json representation of RefTp interface
-        let childrenM: Map<string, number> = r.children.get(qKey.toString());
+        let childrenM: Map<string, number> | undefined = r.children.get(qKey.toString());
         if (!childrenM) {
           childrenM = new Map();
           r.children.set(qKey.toString(), childrenM);

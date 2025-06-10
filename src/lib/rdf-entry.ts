@@ -1,3 +1,4 @@
+// @ts-ignore-next-line
 import { Quad } from 'n3';
 /* eslint-disable no-case-declarations */
 import { MerklizationConstants } from './constants';
@@ -65,7 +66,7 @@ export class RDFEntry {
     RDFDataset.assertDatasetConsistency(ds);
 
     const quads = ds.graphs.get(MerklizationConstants.DEFAULT_GRAPH_NODE_NAME);
-    if (!quads.length) {
+    if (!quads?.length) {
       throw new Error('@default graph not found in dataset');
     }
 
@@ -113,7 +114,7 @@ export class RDFEntry {
         }
 
         const count = counts.get(qKey.toString());
-        let idx: number;
+        let idx: number | undefined;
         switch (count) {
           case 0:
             throw new Error('[assertion] key not found in counts');
@@ -126,7 +127,7 @@ export class RDFEntry {
             seenCount.set(key, idx + 1);
         }
 
-        const path = rs.path(quadGraphIdx, ds, idx);
+        const path = rs.path(quadGraphIdx, ds, idx as number);
         const e = new RDFEntry(path, value, dataType, hasher);
         entries.push(e);
       }
