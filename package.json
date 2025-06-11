@@ -1,6 +1,6 @@
 {
   "name": "@iden3/js-jsonld-merklization",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "json ld merklization library",
   "source": "./src/index.ts",
   "exports": {
@@ -57,7 +57,6 @@
     "@types/node": "^22.15.19",
     "esbuild": "^0.25.4",
     "madge": "^8.0.0",
-    "patch-package": "^8.0.0",
     "rimraf": "^6.0.1",
     "rollup": "^4.41.0",
     "ts-node": "^10.9.2",
@@ -71,6 +70,7 @@
   "dependencies": {
     "@js-temporal/polyfill": "0.5.1",
     "jsonld": "8.3.2",
+    "patch-package": "^8.0.0",
     "n3": "1.17.3"
   },
   "browserslist": {
