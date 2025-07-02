@@ -1,5 +1,5 @@
 import { poseidon } from '@iden3/js-crypto';
-import { Hasher } from './../src/lib/types/types';
+import { Hasher } from '../src/types/types';
 
 export class TestHasher implements Hasher {
   async hash(inpBI: bigint[]): Promise<bigint> {

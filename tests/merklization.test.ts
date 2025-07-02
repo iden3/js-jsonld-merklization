@@ -1,9 +1,9 @@
 /* eslint-disable no-console */
 import { readFile } from 'fs/promises';
-import { Merklizer } from './../src/lib/merklizer';
-import { MerklizationConstants } from './../src/lib/constants';
-import { RDFEntry } from './../src/lib/rdf-entry';
-import { RDFDataset } from './../src/lib/rdf-dataset';
+import { Merklizer } from '../src/merklizer';
+import { MerklizationConstants } from '../src/constants';
+import { RDFEntry } from '../src/rdf-entry';
+import { RDFDataset } from '../src/rdf-dataset';
 import {
   credentials_v1,
   arr_test,
@@ -20,15 +20,16 @@ import {
   testDocumentIPFS
 } from './data';
 import { Merkletree, verifyProof, InMemoryDB, str2Bytes } from '@iden3/js-merkletree';
-import { DEFAULT_HASHER } from '../src/lib/poseidon';
-import { Path } from '../src/lib/path';
-import { MtValue } from '../src/lib/mt-value';
+import { DEFAULT_HASHER } from '../src/poseidon';
+import { Path } from '../src/path';
+import { MtValue } from '../src/mt-value';
 import { Temporal } from '@js-temporal/polyfill';
 import { TestHasher } from './hasher';
 import { poseidon } from '@iden3/js-crypto';
 import { normalizeIPFSNodeURL } from '../src/loaders/jsonld-loader';
 import customSchemaJSON from './testdata/custom-schema.json';
 import { cacheLoader } from './cache';
+import { describe, it, expect, beforeAll } from 'vitest';
 
 describe('tests merklization', () => {
   it('multigraph TestEntriesFromRDF', async () => {

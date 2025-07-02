@@ -1,11 +1,10 @@
 /* eslint-disable no-case-declarations */
-// @ts-ignore-next-line
-import { Quad } from 'n3';
+import * as n3 from 'n3';
 import { MerklizationConstants } from './constants';
 import { canonicalDouble, Value, XSDNS } from './types/types';
 import { Temporal } from '@js-temporal/polyfill';
 
-export function getGraphName(q: Quad): string {
+export function getGraphName(q: n3.Quad): string {
   if (!q.graph.value) {
     return MerklizationConstants.DEFAULT_GRAPH_NODE_NAME;
   }

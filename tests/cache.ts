@@ -1,6 +1,6 @@
 import { RemoteDocument } from 'jsonld/jsonld-spec';
-import { getDocumentLoader } from '../src/lib/options';
-import { Options } from '../src/lib/types/types';
+import { getDocumentLoader } from '../src/options';
+import { Options } from '../src/types/types';
 import { W3C_CREDENTIAL_2018, W3C_VC_SCHEMA } from './data';
 import { DocumentLoader } from '../src/loaders/jsonld-loader';
 

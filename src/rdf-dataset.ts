@@ -1,8 +1,7 @@
 import { MerklizationConstants } from './constants';
-// @ts-ignore-next-line
-import { Quad, Parser } from 'n3';
-import { canonize, JsonLdDocument } from 'jsonld';
-import { DocumentLoader } from '../loaders/jsonld-loader';
+import * as n3 from 'n3';
+import * as jsonld from 'jsonld';
+import { DocumentLoader } from './loaders/jsonld-loader';
 import { DatasetIdx } from './dataset-idx';
 import { getGraphName } from './utils';
 import { RefTp } from './ref-tp';
@@ -10,7 +9,7 @@ import { NodeType } from './types/types';
 import { getDocumentLoader } from './options';
 
 export class RDFDataset {
-  constructor(public readonly graphs: Map<string, Quad[]> = new Map()) {}
+  constructor(public readonly graphs: Map<string, n3.Quad[]> = new Map()) {}
   // assert consistency of dataset and validate that only
   // quads we support contains in dataset.
   static assertDatasetConsistency = (ds: RDFDataset): void => {
@@ -30,16 +29,16 @@ export class RDFDataset {
   };
 
   static async fromDocument(
-    doc: JsonLdDocument,
+    doc: jsonld.JsonLdDocument,
     documentLoader: DocumentLoader = getDocumentLoader()
   ): Promise<RDFDataset> {
-    const normalizedData = await canonize(doc, {
+    const normalizedData = await jsonld.canonize(doc, {
       format: MerklizationConstants.QUADS_FORMAT,
       documentLoader
     });
-    const parser = new Parser({ format: MerklizationConstants.QUADS_FORMAT });
+    const parser = new n3.Parser({ format: MerklizationConstants.QUADS_FORMAT });
 
-    const quads: Quad[] = parser.parse(normalizedData);
+    const quads: n3.Quad[] = parser.parse(normalizedData);
     const ds = new RDFDataset();
     for (const q of quads) {
       const graphName =
@@ -54,7 +53,7 @@ export class RDFDataset {
     return ds;
   }
 
-  static getQuad(ds: RDFDataset, idx: DatasetIdx): Quad {
+  static getQuad(ds: RDFDataset, idx: DatasetIdx): n3.Quad {
     const quads = ds.graphs.get(idx.graphName);
     if (!quads) {
       throw MerklizationConstants.ERRORS.GRAPH_NOT_FOUND;
@@ -65,7 +64,10 @@ export class RDFDataset {
     return quads[idx.idx];
   }
 
-  static iterGraphsOrdered(ds: RDFDataset, callback: (graphName: string, quads: Quad[]) => void) {
+  static iterGraphsOrdered(
+    ds: RDFDataset,
+    callback: (graphName: string, quads: n3.Quad[]) => void
+  ) {
     const graphNames: string[] = [];
     for (const graphName of ds.graphs.keys()) {
       graphNames.push(graphName);
@@ -81,7 +83,7 @@ export class RDFDataset {
     }
   }
 
-  static findParent(ds: RDFDataset, q: Quad): DatasetIdx | undefined {
+  static findParent(ds: RDFDataset, q: n3.Quad): DatasetIdx | undefined {
     const parent = RDFDataset.findParentInsideGraph(ds, q);
     if (parent) {
       return parent;
@@ -90,7 +92,7 @@ export class RDFDataset {
     return RDFDataset.findGraphParent(ds, q);
   }
 
-  static findParentInsideGraph(ds: RDFDataset, q: Quad): DatasetIdx | undefined {
+  static findParentInsideGraph(ds: RDFDataset, q: n3.Quad): DatasetIdx | undefined {
     const graphName = getGraphName(q);
     let result: DatasetIdx | undefined;
     const quads = ds.graphs.get(graphName);
@@ -98,7 +100,7 @@ export class RDFDataset {
       return undefined;
     }
 
-    const qKey = RefTp.getRefFromQuad(q.subject);
+    const qKey = RefTp.getRefFromQuad(q.subject as n3.Quad_Subject);
     if (qKey.tp === NodeType.Undefined) {
       return undefined;
     }
@@ -126,7 +128,7 @@ export class RDFDataset {
     return result;
   }
 
-  static findGraphParent(ds: RDFDataset, q: Quad): DatasetIdx | undefined {
+  static findGraphParent(ds: RDFDataset, q: n3.Quad): DatasetIdx | undefined {
     if (!q.graph) {
       return undefined;
     }

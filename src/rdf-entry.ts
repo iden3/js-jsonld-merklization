@@ -1,6 +1,4 @@
-// @ts-ignore-next-line
-import { Quad } from 'n3';
-/* eslint-disable no-case-declarations */
+import * as n3 from 'n3';
 import { MerklizationConstants } from './constants';
 import { Path } from './path';
 import { Hasher, NodeType, Value } from './types/types';
@@ -72,7 +70,7 @@ export class RDFEntry {
 
     const rs = await Relationship.newRelationship(ds, hasher);
     const entries: RDFEntry[] = [];
-    const graphProcessor = (graphName: string, quads: Quad[]): void => {
+    const graphProcessor = (graphName: string, quads: n3.Quad[]): void => {
       const counts = QuadArrKey.countEntries(quads);
       const seenCount = new Map<string, number>();
       for (let quadIdx = 0; quadIdx < quads.length; quadIdx++) {
@@ -96,7 +94,7 @@ export class RDFEntry {
             }
             value = qoVal;
             break;
-          case NodeType.BlankNode:
+          case NodeType.BlankNode: {
             const p = rs.children.get(qKey.toString());
             if (p) {
               // this node is a reference to known parent,
@@ -106,6 +104,7 @@ export class RDFEntry {
               continue;
             }
             throw new Error('BlankNode is not supported yet');
+          }
           case 'Variable':
             value = qoVal;
             break;
@@ -121,10 +120,11 @@ export class RDFEntry {
           case 1:
             // leave idx nil: only one element, do not consider it as an array
             break;
-          default:
+          default: {
             const key = qKey.toString();
             idx = seenCount.get(key) ?? 0;
             seenCount.set(key, idx + 1);
+          }
         }
 
         const path = rs.path(quadGraphIdx, ds, idx as number);
