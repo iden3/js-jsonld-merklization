@@ -41,8 +41,8 @@ export default defineConfig([
     ...config,
     format: ['esm'],
     // !NOTE: uncomment if you need to test index.html
-    external: [...Object.keys(packageJson.peerDependencies)],
-    noExternal: [...Object.keys(packageJson.dependencies)],
+    // external: [...Object.keys(packageJson.peerDependencies)],
+    // noExternal: [...Object.keys(packageJson.dependencies)],
     platform: 'browser',
     outDir: getDir(packageJson.exports['.'].browser),
     env: {
