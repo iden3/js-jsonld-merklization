@@ -1,4 +1,4 @@
-import * as n3 from 'n3';
+import { Quad } from 'n3';
 import { getGraphName } from './utils';
 import { RefTp } from './ref-tp';
 import { NodeType } from './types/types';
@@ -8,7 +8,7 @@ export class QuadArrKey {
   predicate: unknown;
   graph: string;
 
-  constructor(q: n3.Quad) {
+  constructor(q: Quad) {
     this.graph = getGraphName(q);
     const s = q.subject;
     switch (s.termType) {
@@ -32,7 +32,7 @@ export class QuadArrKey {
     return JSON.stringify(this);
   }
 
-  static countEntries = (nodes: n3.Quad[]): Map<string, number> => {
+  static countEntries = (nodes: Quad[]): Map<string, number> => {
     const res: Map<string, number> = new Map();
     for (const q of nodes) {
       const key = new QuadArrKey(q);

@@ -1,4 +1,4 @@
-import * as n3 from 'n3';
+import { Quad } from 'n3';
 import { MerklizationConstants } from './constants';
 import { Path } from './path';
 import { Hasher, NodeType, Value } from './types/types';
@@ -70,7 +70,7 @@ export class RDFEntry {
 
     const rs = await Relationship.newRelationship(ds, hasher);
     const entries: RDFEntry[] = [];
-    const graphProcessor = (graphName: string, quads: n3.Quad[]): void => {
+    const graphProcessor = (graphName: string, quads: Quad[]): void => {
       const counts = QuadArrKey.countEntries(quads);
       const seenCount = new Map<string, number>();
       for (let quadIdx = 0; quadIdx < quads.length; quadIdx++) {
