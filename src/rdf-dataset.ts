@@ -1,8 +1,7 @@
 import { MerklizationConstants } from './constants';
-// @ts-ignore-next-line
-import { Quad, Parser } from 'n3';
-import { canonize, JsonLdDocument } from 'jsonld';
-import { DocumentLoader } from '../loaders/jsonld-loader';
+import { Parser, Quad, Quad_Subject } from 'n3';
+import * as jsonld from 'jsonld';
+import { DocumentLoader } from './loaders/jsonld-loader';
 import { DatasetIdx } from './dataset-idx';
 import { getGraphName } from './utils';
 import { RefTp } from './ref-tp';
@@ -30,10 +29,10 @@ export class RDFDataset {
   };
 
   static async fromDocument(
-    doc: JsonLdDocument,
+    doc: jsonld.JsonLdDocument,
     documentLoader: DocumentLoader = getDocumentLoader()
   ): Promise<RDFDataset> {
-    const normalizedData = await canonize(doc, {
+    const normalizedData = await jsonld.canonize(doc, {
       format: MerklizationConstants.QUADS_FORMAT,
       documentLoader
     });
@@ -98,7 +97,7 @@ export class RDFDataset {
       return undefined;
     }
 
-    const qKey = RefTp.getRefFromQuad(q.subject);
+    const qKey = RefTp.getRefFromQuad(q.subject as Quad_Subject);
     if (qKey.tp === NodeType.Undefined) {
       return undefined;
     }

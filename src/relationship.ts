@@ -1,5 +1,4 @@
 import { Hasher, NodeType } from './types/types';
-// @ts-ignore-next-line
 import { Quad } from 'n3';
 import { Path } from './path';
 import { RefTp } from './ref-tp';
@@ -17,7 +16,7 @@ export class Relationship {
     public hasher: Hasher = DEFAULT_HASHER
   ) {}
 
-  static getIriValue(n: Quad): Quad {
+  static getIriValue(n: Quad): string {
     if (n.predicate.termType === NodeType.IRI) {
       return n.predicate.value;
     }

@@ -1,13 +1,5 @@
 import { JsonLd, RemoteDocument, Url } from 'jsonld/jsonld-spec';
-// @ts-ignore-next-line
-import { parseLinkHeader } from 'jsonld/lib/util';
-// @ts-ignore-next-line
-import { LINK_HEADER_CONTEXT } from 'jsonld/lib/constants';
-// @ts-ignore-next-line
-import JsonLdError from 'jsonld/lib/JsonLdError';
-// @ts-ignore-next-line
-import { prependBase } from 'jsonld/lib/url';
-
+import * as jsonld from 'jsonld';
 /**
  * Creates a built-in node document loader.
  *
@@ -33,7 +25,7 @@ export class JsonLDLoader {
     const isHttp = url.startsWith('http:');
     const isHttps = url.startsWith('https:');
     if (!isHttp && !isHttps) {
-      throw new JsonLdError(
+      throw new jsonld.JsonLdError(
         'URL could not be dereferenced; only "http" and "https" URLs are ' + 'supported.',
         'jsonld.InvalidUrl',
         { code: 'loading document failed', url }
@@ -49,11 +41,15 @@ export class JsonLDLoader {
     let alternate = null;
 
     const { res, body } = await _fetch({ url });
-    const doc = { contextUrl: undefined, documentUrl: url, document: body || null };
+    const doc = {
+      contextUrl: undefined,
+      documentUrl: url,
+      document: body as unknown as JsonLd
+    } as RemoteDocument;
 
     // handle error
     if (res.status >= 400) {
-      throw new JsonLdError(
+      throw new jsonld.JsonLdError(
         `URL "${url}" could not be dereferenced: ${res.statusText}`,
         'jsonld.InvalidUrl',
         {
@@ -70,17 +66,19 @@ export class JsonLDLoader {
     // handle Link Header
     if (link && contentType !== 'application/ld+json' && contentType !== 'application/json') {
       // only 1 related link header permitted
+      const { parseLinkHeader } = jsonld.util;
+      const { LINK_HEADER_CONTEXT } = jsonld.constants;
       const linkHeaders = parseLinkHeader(link);
       const linkedContext = linkHeaders[LINK_HEADER_CONTEXT];
       if (Array.isArray(linkedContext)) {
-        throw new JsonLdError(
+        throw new jsonld.JsonLdError(
           'URL could not be dereferenced, it has more than one associated ' + 'HTTP Link Header.',
           'jsonld.InvalidUrl',
           { code: 'multiple context link headers', url }
         );
       }
       if (linkedContext) {
-        doc.contextUrl = linkedContext.target;
+        doc.contextUrl = linkedContext.target as string;
       }
 
       // "alternate" link header is a redirect
@@ -90,6 +88,7 @@ export class JsonLDLoader {
         alternate['type'] == 'application/ld+json' &&
         !(contentType || '').match(/^application\/(\w*\+)?json$/)
       ) {
+        const { prependBase } = jsonld.url;
         location = prependBase(url, alternate['target']);
       }
     }
@@ -97,7 +96,7 @@ export class JsonLDLoader {
     // handle redirect
     if ((alternate || (res.status >= 300 && res.status < 400)) && location) {
       if (redirects.length === -1) {
-        throw new JsonLdError(
+        throw new jsonld.JsonLdError(
           'URL could not be dereferenced; there were too many redirects.',
           'jsonld.TooManyRedirects',
           {
@@ -109,7 +108,7 @@ export class JsonLDLoader {
         );
       }
       if (redirects.indexOf(url) !== -1) {
-        throw new JsonLdError(
+        throw new jsonld.JsonLdError(
           'URL could not be dereferenced; infinite redirection was detected.',
           'jsonld.InfiniteRedirectDetected',
           {
@@ -183,7 +182,7 @@ async function loadIPFS(
   const documentURL = ipfsURLPrefix + url;
 
   if (!ipfsNodeURL && !ipfsGatewayURL) {
-    throw new JsonLdError('IPFS is not configured', 'jsonld.IPFSNotConfigured', {
+    throw new jsonld.JsonLdError('IPFS is not configured', 'jsonld.IPFSNotConfigured', {
       code: 'loading document failed',
       url: documentURL
     });
@@ -208,9 +207,9 @@ async function loadFromIPFSNode(url: string, ipfsNodeURL: string): Promise<Remot
 
   return {
     contextUrl: undefined,
-    document: (body as JsonLd) || null,
+    document: (body as unknown as JsonLd) || null,
     documentUrl: ipfsURLPrefix + url
-  };
+  } as RemoteDocument;
 }
 
 async function loadFromIPFSGateway(
@@ -218,7 +217,7 @@ async function loadFromIPFSGateway(
   ipfsGatewayURL: string | undefined = undefined
 ): Promise<RemoteDocument> {
   if (!ipfsGatewayURL) {
-    throw new JsonLdError('IPFS gateway is not configured', 'jsonld.IPFSNotConfigured', {
+    throw new jsonld.JsonLdError('IPFS gateway is not configured', 'jsonld.IPFSNotConfigured', {
       code: 'loading document failed',
       url: ipfsURLPrefix + url
     });
@@ -263,10 +262,10 @@ async function _fetch({ url, method }: { url: string | URL; method?: string }): 
     if (e instanceof Error && 'response' in e) {
       return { res: e.response as Response, body: null };
     }
-    throw new JsonLdError(
+    throw new jsonld.JsonLdError(
       'URL could not be dereferenced, an error occurred.',
       'jsonld.LoadDocumentError',
-      { code: 'loading document failed', url, cause: e }
+      { code: 'loading document failed', url: url.toString(), cause: e }
     );
   }
 }

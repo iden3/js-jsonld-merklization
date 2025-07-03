@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="./dist/browser/umd/index.js"></script>
+    <script src="./dist/browser/umd/index.global.js"></script>
     <title>Test</title>
     <script type="importmap">
       {
@@ -87,9 +87,25 @@
       const val = await mz.rawValue(path);
       console.assert(val === 'JOHN');
     };
-    runIPFS(Iden3Merklizer).catch(console.error);
-    runIPFS(esMerklizer).catch(console.error);
-    run(Iden3Merklizer).catch(console.error);
-    run(esMerklizer).catch(console.error);
+    runIPFS(Iden3Merklizer)
+      .then(() => {
+        console.log('Iden3Merklizer IPFS done');
+      })
+      .catch(console.error);
+    runIPFS(esMerklizer)
+      .then(() => {
+        console.log('esMerklizer IPFS done');
+      })
+      .catch(console.error);
+    run(Iden3Merklizer)
+      .then(() => {
+        console.log('Iden3Merklizer done');
+      })
+      .catch(console.error);
+    run(esMerklizer)
+      .then(() => {
+        console.log('esMerklizer done');
+      })
+      .catch(console.error);
   </script>
 </html>

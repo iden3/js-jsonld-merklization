@@ -1,6 +1,6 @@
 import { MerklizationConstants } from './constants';
 import { Hasher, Options, Parts, ParsedCtx } from './types/types';
-import { processContext, JsonLdDocument } from 'jsonld';
+import * as jsonld from 'jsonld';
 import { DEFAULT_HASHER } from './poseidon';
 import { byteEncoder, sortArr } from './utils';
 import { getDocumentLoader, getHasher } from './options';
@@ -46,8 +46,8 @@ export class Path {
       throw MerklizationConstants.ERRORS.CONTEXT_NOT_DEFINED;
     }
     const jsonldOpts = { documentLoader: getDocumentLoader(opts) };
-    const emptyCtx = await processContext(null, null, jsonldOpts);
-    let parsedCtx = await processContext(emptyCtx, doc, jsonldOpts);
+    const emptyCtx = await jsonld.processContext(null, null, jsonldOpts);
+    let parsedCtx = await jsonld.processContext(emptyCtx, doc, jsonldOpts);
 
     const parts = path.split('.');
 
@@ -68,7 +68,7 @@ export class Path {
 
         const nextCtx = (m as { '@context': string | undefined })['@context'];
         if (nextCtx) {
-          parsedCtx = await processContext(parsedCtx, m, jsonldOpts);
+          parsedCtx = await jsonld.processContext(parsedCtx, m, jsonldOpts);
         }
         this.parts.push(id);
       }
@@ -83,8 +83,8 @@ export class Path {
     }
 
     const jsonldOpts = { documentLoader: getDocumentLoader(opts) };
-    const emptyCtx = await processContext(null, null, jsonldOpts);
-    let parsedCtx = await processContext(emptyCtx, ctxObj, jsonldOpts);
+    const emptyCtx = await jsonld.processContext(null, null, jsonldOpts);
+    let parsedCtx = await jsonld.processContext(emptyCtx, ctxObj, jsonldOpts);
 
     const parts = path.split('.');
 
@@ -92,7 +92,7 @@ export class Path {
       const p = parts[i];
       const expP = expandType(parsedCtx, p);
       if (expP.hasContext) {
-        parsedCtx = await processContext(parsedCtx, expP.typeDef, jsonldOpts);
+        parsedCtx = await jsonld.processContext(parsedCtx, expP.typeDef, jsonldOpts);
       }
       this.parts.push(expP['@id']);
     }
@@ -121,7 +121,7 @@ export class Path {
 
   private static async pathFromDocument(
     ldCTX: ParsedCtx | null,
-    doc: JsonLdDocument,
+    doc: jsonld.JsonLdDocument,
     pathParts: string[],
     acceptArray: boolean,
     opts?: Options
@@ -158,10 +158,10 @@ export class Path {
 
     if ('@context' in doc) {
       if (ldCTX) {
-        ldCTX = await processContext(ldCTX, doc, jsonldOpts);
+        ldCTX = await jsonld.processContext(ldCTX, doc, jsonldOpts);
       } else {
-        const emptyCtx = await processContext(null, null, jsonldOpts);
-        ldCTX = await processContext(emptyCtx, doc, jsonldOpts);
+        const emptyCtx = await jsonld.processContext(null, null, jsonldOpts);
+        ldCTX = await jsonld.processContext(emptyCtx, doc, jsonldOpts);
       }
     }
 
@@ -200,7 +200,7 @@ export class Path {
       for (const tt of types) {
         const td = typedScopedCtx?.mappings.get(tt);
         if (typeof td === 'object' && '@context' in td) {
-          ldCTX = await processContext(ldCTX, td as JsonLdDocument, jsonldOpts);
+          ldCTX = await jsonld.processContext(ldCTX, td as jsonld.JsonLdDocument, jsonldOpts);
         }
       }
 
@@ -210,15 +210,15 @@ export class Path {
     const expTerm = expandType(ldCTX, term);
     if (expTerm.hasContext) {
       if (ldCTX) {
-        ldCTX = await processContext(ldCTX, expTerm.typeDef, jsonldOpts);
+        ldCTX = await jsonld.processContext(ldCTX, expTerm.typeDef, jsonldOpts);
       } else {
-        const emptyCtx = await processContext(null, null, jsonldOpts);
-        ldCTX = await processContext(emptyCtx, expTerm.typeDef, jsonldOpts);
+        const emptyCtx = await jsonld.processContext(null, null, jsonldOpts);
+        ldCTX = await jsonld.processContext(emptyCtx, expTerm.typeDef, jsonldOpts);
       }
     }
     const moreParts = await Path.pathFromDocument(
       ldCTX,
-      (doc as Record<string, JsonLdDocument>)[term] as JsonLdDocument,
+      (doc as Record<string, jsonld.JsonLdDocument>)[term] as jsonld.JsonLdDocument,
       newPathParts,
       true,
       opts
@@ -283,8 +283,8 @@ export class Path {
   ): Promise<string> {
     const ctxObj = JSON.parse(ctxStr);
     const jsonldOpts = { documentLoader: getDocumentLoader(opts) };
-    const emptyCtx = await processContext(null, null, jsonldOpts);
-    const parsedCtx = await processContext(emptyCtx, ctxObj, jsonldOpts);
+    const emptyCtx = await jsonld.processContext(null, null, jsonldOpts);
+    const parsedCtx = await jsonld.processContext(emptyCtx, ctxObj, jsonldOpts);
     const typeDef = parsedCtx.mappings.get(typeName);
 
     if (!typeDef) {

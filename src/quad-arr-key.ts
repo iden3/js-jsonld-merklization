@@ -1,4 +1,3 @@
-// @ts-ignore-next-line
 import { Quad } from 'n3';
 import { getGraphName } from './utils';
 import { RefTp } from './ref-tp';

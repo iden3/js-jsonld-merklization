@@ -1,6 +1,6 @@
 import { Hasher, Options } from './types/types';
 import { DEFAULT_HASHER } from './poseidon';
-import { getJsonLdDocLoader, DocumentLoader } from '../loaders/jsonld-loader';
+import { getJsonLdDocLoader, DocumentLoader } from './loaders/jsonld-loader';
 
 export function getHasher(opts?: Options): Hasher {
   return opts?.hasher ?? DEFAULT_HASHER;

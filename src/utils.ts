@@ -1,5 +1,3 @@
-/* eslint-disable no-case-declarations */
-// @ts-ignore-next-line
 import { Quad } from 'n3';
 import { MerklizationConstants } from './constants';
 import { canonicalDouble, Value, XSDNS } from './types/types';
@@ -99,7 +97,7 @@ export const convertStringToXsdValue = (
     case XSDNS.NonNegativeInteger:
     case XSDNS.NonPositiveInteger:
     case XSDNS.NegativeInteger:
-    case XSDNS.PositiveInteger:
+    case XSDNS.PositiveInteger: {
       const int = BigInt(valueStr);
 
       const { min, max } = minMaxByXSDType(dataType, maxFieldValue);
@@ -113,6 +111,7 @@ export const convertStringToXsdValue = (
       }
 
       return int;
+    }
 
     case XSDNS.DateTime: {
       if (isNaN(Date.parse(valueStr))) {

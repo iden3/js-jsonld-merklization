@@ -1,19 +1,42 @@
 import * as cspell from '@iden3/eslint-config/cspell.js';
+import { FlatCompat } from '@eslint/eslintrc';
+import js from '@eslint/js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-import iden3Config from '@iden3/eslint-config';
+// mimic CommonJS variables -- not needed if using CommonJS
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-export default {
-  ...iden3Config,
-  rules:{
-    '@cspell/spellchecker': [
-      1,
-      {
-        ...cspell.spellcheckerRule,
-        cspell: {
-          ...cspell.cspellConfig,
-          ignoreWords: ['multigraph', 'kubo', 'Ggok', 'Jggg']
+const compat = new FlatCompat({
+  baseDirectory: __dirname,
+  recommendedConfig: js.configs.recommended
+});
+
+export default [
+  // Use FlatCompat to translate the old eslintrc config
+  ...compat.config({
+    parser: '@typescript-eslint/parser',
+    plugins: ['@typescript-eslint', 'prettier', '@cspell/eslint-plugin'],
+    extends: [
+      'eslint:recommended',
+      'plugin:@typescript-eslint/eslint-recommended',
+      'plugin:@typescript-eslint/recommended',
+      'prettier'
+    ],
+    rules: {
+      'no-console': 1,
+      'prettier/prettier': 2,
+      '@cspell/spellchecker': [
+        1,
+        {
+          ...cspell.spellcheckerRule,
+          cspell: {
+            ...cspell.cspellConfig,
+            ignoreWords: ['multigraph', 'kubo', 'Ggok', 'Jggg']
+          }
         }
-      }
-    ]
-  }
-};
+      ]
+    }
+  })
+];

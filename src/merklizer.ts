@@ -1,11 +1,5 @@
 import { Hasher, Value, Options } from './types/types';
-import {
-  compact,
-  NodeObject,
-  JsonLdDocument,
-  ContextDefinition,
-  Options as JsonLdOptions
-} from 'jsonld';
+import * as jsonld from 'jsonld';
 import { Merkletree, Hash, Proof } from '@iden3/js-merkletree';
 import { RDFDataset } from './rdf-dataset';
 import { DEFAULT_HASHER } from './poseidon';
@@ -22,7 +16,7 @@ export class Merklizer {
     public readonly mt: Merkletree | null = null,
     public readonly hasher: Hasher = DEFAULT_HASHER,
     public readonly entries: Map<string, RDFEntry> = new Map(),
-    public compacted: NodeObject | null = null,
+    public compacted: jsonld.NodeObject | null = null,
     public documentLoader = getDocumentLoader()
   ) {
     if (!mt) {
@@ -96,7 +90,7 @@ export class Merklizer {
     if (!this.compacted) {
       throw new Error('Compact document is not initialized');
     }
-    let obj: NodeObject = this.compacted;
+    let obj: jsonld.NodeObject = this.compacted;
     const traversedParts: string[] = [];
     const currentPath = (): string => traversedParts.join(' / ');
 
@@ -104,13 +98,13 @@ export class Merklizer {
       const p = parts[0];
       if (typeof p === 'string') {
         traversedParts.push(p);
-        obj = (obj[p] ?? ((obj['@graph'] ?? {}) as NodeObject)[p]) as NodeObject;
+        obj = (obj[p] ?? ((obj['@graph'] ?? {}) as jsonld.NodeObject)[p]) as jsonld.NodeObject;
         if (!obj) {
           throw new Error('value not found');
         }
       } else if (typeof p === 'number') {
         traversedParts.push(p.toString());
-        obj = this.rvExtractArrayIdx(obj, p) as NodeObject;
+        obj = this.rvExtractArrayIdx(obj, p) as jsonld.NodeObject;
       } else {
         throw new Error(`unexpected type of path ${currentPath()}`);
       }
@@ -159,15 +153,15 @@ export class Merklizer {
     }
     await addEntriesToMerkleTree(mz.mt, entries);
     // input: JsonLdDocument, ctx?: ContextDefinition, options?: Options.Compact
-    mz.compacted = await compact(
-      doc as JsonLdDocument,
-      {} as ContextDefinition,
+    mz.compacted = await jsonld.compact(
+      doc as jsonld.JsonLdDocument,
+      {} as jsonld.ContextDefinition,
       {
         documentLoader,
         base: null,
         compactArrays: true,
         compactToRelative: true
-      } as unknown as JsonLdOptions.Compact
+      } as unknown as jsonld.Options.Compact
     );
 
     return mz;

@@ -1,5 +1,4 @@
-// @ts-ignore-next-line
-import { Quad } from 'n3';
+import { Quad_Subject, Quad_Object, Quad_Graph } from 'n3';
 import { NodeType } from './types/types';
 
 export class RefTp {
@@ -9,7 +8,7 @@ export class RefTp {
     return JSON.stringify(this);
   }
 
-  static getRefFromQuad(n: Quad): RefTp {
+  static getRefFromQuad(n: Quad_Subject | Quad_Object | Quad_Graph): RefTp {
     if (n.termType === NodeType.IRI) {
       return new RefTp(NodeType.IRI, n.value);
     }
