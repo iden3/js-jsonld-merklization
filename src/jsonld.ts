@@ -1,5 +1,5 @@
 import jsonld from 'jsonld';
 
-export function getInitialContext(opts: jsonld.jsonLDOpts) {
-  return jsonld.getInitialContext(opts);
+export function getInitialContext(opts: jsonld.JsonLDOpts) {
+  return jsonld.processContext(null, null, opts);
 }

@@ -1,5 +1,9 @@
 import { JsonLd, RemoteDocument, Url } from 'jsonld/jsonld-spec';
-import jsonld from 'jsonld';
+import util from 'jsonld/lib/util.js';
+import constants from 'jsonld/lib/constants.js';
+import JsonLdError from 'jsonld/lib/JsonLdError.js';
+import urlUtil from 'jsonld/lib/url.js';
+
 /**
  * Creates a built-in node document loader.
  *
@@ -25,7 +29,7 @@ export class JsonLDLoader {
     const isHttp = url.startsWith('http:');
     const isHttps = url.startsWith('https:');
     if (!isHttp && !isHttps) {
-      throw new jsonld.JsonLdError(
+      throw new JsonLdError(
         'URL could not be dereferenced; only "http" and "https" URLs are ' + 'supported.',
         'jsonld.InvalidUrl',
         { code: 'loading document failed', url }
@@ -49,7 +53,7 @@ export class JsonLDLoader {
 
     // handle error
     if (res.status >= 400) {
-      throw new jsonld.JsonLdError(
+      throw new JsonLdError(
         `URL "${url}" could not be dereferenced: ${res.statusText}`,
         'jsonld.InvalidUrl',
         {
@@ -66,12 +70,10 @@ export class JsonLDLoader {
     // handle Link Header
     if (link && contentType !== 'application/ld+json' && contentType !== 'application/json') {
       // only 1 related link header permitted
-      const { parseLinkHeader } = jsonld.util;
-      const { LINK_HEADER_CONTEXT } = jsonld.constants;
-      const linkHeaders = parseLinkHeader(link);
-      const linkedContext = linkHeaders[LINK_HEADER_CONTEXT];
+      const linkHeaders = util.parseLinkHeader(link);
+      const linkedContext = linkHeaders[constants.LINK_HEADER_CONTEXT];
       if (Array.isArray(linkedContext)) {
-        throw new jsonld.JsonLdError(
+        throw new JsonLdError(
           'URL could not be dereferenced, it has more than one associated ' + 'HTTP Link Header.',
           'jsonld.InvalidUrl',
           { code: 'multiple context link headers', url }
@@ -88,15 +90,14 @@ export class JsonLDLoader {
         alternate['type'] == 'application/ld+json' &&
         !(contentType || '').match(/^application\/(\w*\+)?json$/)
       ) {
-        const { prependBase } = jsonld.url;
-        location = prependBase(url, alternate['target']);
+        location = urlUtil.prependBase(url, alternate['target']);
       }
     }
 
     // handle redirect
     if ((alternate || (res.status >= 300 && res.status < 400)) && location) {
       if (redirects.length === -1) {
-        throw new jsonld.JsonLdError(
+        throw new JsonLdError(
           'URL could not be dereferenced; there were too many redirects.',
           'jsonld.TooManyRedirects',
           {
@@ -108,7 +109,7 @@ export class JsonLDLoader {
         );
       }
       if (redirects.indexOf(url) !== -1) {
-        throw new jsonld.JsonLdError(
+        throw new JsonLdError(
           'URL could not be dereferenced; infinite redirection was detected.',
           'jsonld.InfiniteRedirectDetected',
           {
@@ -182,7 +183,7 @@ async function loadIPFS(
   const documentURL = ipfsURLPrefix + url;
 
   if (!ipfsNodeURL && !ipfsGatewayURL) {
-    throw new jsonld.JsonLdError('IPFS is not configured', 'jsonld.IPFSNotConfigured', {
+    throw new JsonLdError('IPFS is not configured', 'jsonld.IPFSNotConfigured', {
       code: 'loading document failed',
       url: documentURL
     });
@@ -217,7 +218,7 @@ async function loadFromIPFSGateway(
   ipfsGatewayURL: string | undefined = undefined
 ): Promise<RemoteDocument> {
   if (!ipfsGatewayURL) {
-    throw new jsonld.JsonLdError('IPFS gateway is not configured', 'jsonld.IPFSNotConfigured', {
+    throw new JsonLdError('IPFS gateway is not configured', 'jsonld.IPFSNotConfigured', {
       code: 'loading document failed',
       url: ipfsURLPrefix + url
     });
@@ -262,7 +263,7 @@ async function _fetch({ url, method }: { url: string | URL; method?: string }): 
     if (e instanceof Error && 'response' in e) {
       return { res: e.response as Response, body: null };
     }
-    throw new jsonld.JsonLdError(
+    throw new JsonLdError(
       'URL could not be dereferenced, an error occurred.',
       'jsonld.LoadDocumentError',
       { code: 'loading document failed', url: url.toString(), cause: e }
