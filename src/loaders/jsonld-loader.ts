@@ -1,5 +1,5 @@
 import { JsonLd, RemoteDocument, Url } from 'jsonld/jsonld-spec';
-import * as jsonld from 'jsonld';
+import jsonld from 'jsonld';
 /**
  * Creates a built-in node document loader.
  *
