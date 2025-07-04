@@ -8,4 +8,3 @@ export { MerklizationConstants } from './constants';
 export { getDocumentLoader } from './options';
 export { DocumentLoader } from './loaders/jsonld-loader';
 export { Temporal } from '@js-temporal/polyfill';
-export { getInitialContext } from './jsonld';
