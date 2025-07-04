@@ -1,6 +1,6 @@
 import { MerklizationConstants } from './constants';
 import { Hasher, Options, Parts, ParsedCtx } from './types/types';
-import * as jsonld from 'jsonld';
+import jsonld from 'jsonld';
 import { DEFAULT_HASHER } from './poseidon';
 import { byteEncoder, sortArr } from './utils';
 import { getDocumentLoader, getHasher } from './options';

@@ -1,5 +1,5 @@
 import { Hasher, Value, Options } from './types/types';
-import * as jsonld from 'jsonld';
+import jsonld from 'jsonld';
 import { Merkletree, Hash, Proof } from '@iden3/js-merkletree';
 import { RDFDataset } from './rdf-dataset';
 import { DEFAULT_HASHER } from './poseidon';

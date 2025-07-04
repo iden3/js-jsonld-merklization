@@ -1,6 +1,6 @@
 import { MerklizationConstants } from './constants';
 import { Parser, Quad, Quad_Subject } from 'n3';
-import * as jsonld from 'jsonld';
+import jsonld from 'jsonld';
 import { DocumentLoader } from './loaders/jsonld-loader';
 import { DatasetIdx } from './dataset-idx';
 import { getGraphName } from './utils';
