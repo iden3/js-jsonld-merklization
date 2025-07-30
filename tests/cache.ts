@@ -1,7 +1,7 @@
 import { RemoteDocument } from 'jsonld/jsonld-spec';
 import { getDocumentLoader } from '../src/options';
 import { Options } from '../src/types/types';
-import { W3C_CREDENTIAL_2018, W3C_VC_SCHEMA } from './data';
+import { IDEN3_PROOFS, IDEN3_PROOFS_VC_SCHEMA, W3C_CREDENTIAL_2018, W3C_VC_SCHEMA } from './data';
 import { DocumentLoader } from '../src/loaders/jsonld-loader';
 
 export const cacheLoader = (opts?: Options): DocumentLoader => {
@@ -9,6 +9,10 @@ export const cacheLoader = (opts?: Options): DocumentLoader => {
   cache.set(W3C_CREDENTIAL_2018, {
     document: W3C_VC_SCHEMA,
     documentUrl: W3C_CREDENTIAL_2018
+  });
+  cache.set(IDEN3_PROOFS, {
+    document: IDEN3_PROOFS_VC_SCHEMA,
+    documentUrl: IDEN3_PROOFS
   });
   return async (url): Promise<RemoteDocument> => {
     let remoteDoc = cache.get(url);

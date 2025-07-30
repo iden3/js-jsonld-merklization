@@ -17,7 +17,9 @@ import {
   vp,
   ipfsDocument,
   kycV102,
-  testDocumentIPFS
+  testDocumentIPFS,
+  W3C_CREDENTIAL_2018,
+  W3C_VC_SCHEMA
 } from './data';
 import { Merkletree, verifyProof, InMemoryDB, str2Bytes } from '@iden3/js-merkletree';
 import { DEFAULT_HASHER } from '../src/poseidon';
@@ -26,10 +28,13 @@ import { MtValue } from '../src/mt-value';
 import { Temporal } from '@js-temporal/polyfill';
 import { TestHasher } from './hasher';
 import { poseidon } from '@iden3/js-crypto';
-import { normalizeIPFSNodeURL } from '../src/loaders/jsonld-loader';
+import { DocumentLoader, normalizeIPFSNodeURL } from '../src/loaders/jsonld-loader';
 import customSchemaJSON from './testdata/custom-schema.json';
 import { cacheLoader } from './cache';
 import { describe, it, expect, beforeAll } from 'vitest';
+import { RemoteDocument } from 'jsonld/jsonld-spec';
+import { getDocumentLoader } from '../src/options';
+import { Options } from '../src/types/types';
 
 describe('tests merklization', () => {
   it('multigraph TestEntriesFromRDF', async () => {
@@ -542,6 +547,25 @@ describe('tests merklization', () => {
     const result = await Path.getContextPathKey(kycSchema_jsonld, typ, fieldPath);
     const want = new Path([
       'https://github.com/iden3/claim-schema-vocab/blob/main/credentials/kyc.md#birthday'
+    ]);
+
+    expect(want).toEqual(result);
+  });
+
+  it('TestFieldPathFromContextArray', async () => {
+    const basicPerson_jsonld = `{
+      "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "https://schema.iden3.io/core/jsonld/iden3proofs.jsonld",
+        "https://ipfs.io/ipfs/QmZbsTnRwtCmbdg3r9o7Txid37LmvPcvmzVi1Abvqu1WKL"
+      ]
+    }`;
+
+    const typ = 'Iden3ReverseSparseMerkleTreeProof';
+    const fieldPath = 'revocationNonce';
+    const result = await Path.getContextPathKey(basicPerson_jsonld, typ, fieldPath);
+    const want = new Path([
+      'https://schema.iden3.io/core/vocab/Iden3ReverseSparseMerkleTreeProof.md#revocationNonce'
     ]);
 
     expect(want).toEqual(result);
@@ -1138,6 +1162,76 @@ describe('tests merklization', () => {
       const root = await result.root();
       expect(root.bigInt().toString()).toEqual(tc.wantRoot.toString());
     }
+  });
+
+  it.only('Check root before and after adding type to field', async () => {
+    const credential = {
+      id: 'urn:8f7519a1-ef15-44e3-b42d-37244af217ad',
+      '@context': [
+        'https://www.w3.org/2018/credentials/v1',
+        'https://schema.iden3.io/core/jsonld/iden3proofs.jsonld',
+        'https://ipfs.io/ipfs/QmZbsTnRwtCmbdg3r9o7Txid37LmvPcvmzVi1Abvqu1WKL'
+      ],
+      type: ['VerifiableCredential', 'BasicPerson'],
+      expirationDate: '2058-07-10T11:33:20.000Z',
+      issuanceDate: '2025-07-30T15:17:24.845Z',
+      credentialSubject: {
+        id: 'did:iden3:polygon:amoy:xDLAgEFPZFhRbTyp8Xe3ob7Lm52Qk5XULGQgu7yBS',
+        fullName: 'John Doe',
+        firstName: 'John',
+        familyName: 'Doe',
+        dateOfBirth: 838531598,
+        governmentIdentifier: 'RRRRR',
+        governmentIdentifierType: 'passport',
+        placeOfBirth: { countryCode: 'UA-ua' },
+        type: 'BasicPerson'
+      },
+      credentialStatus: {
+        id: 'https://rhs-staging.polygonid.me/node?state=ed17a07e8b78ab979507829fa4d37e663ca5906714d506dec8a174d949c5eb09',
+        type: 'Iden3ReverseSparseMerkleTreeProof',
+        revocationNonce: 2837597946
+      },
+      issuer: 'did:iden3:polygon:amoy:xCRp75DgAdS63W65fmXHz6p9DwdonuRU9e46DifhX',
+      credentialSchema: {
+        id: 'ipfs://QmTojMfyzxehCJVw7aUrdWuxdF68R7oLYooGHCUr9wwsef',
+        type: 'JsonSchema2023'
+      }
+    };
+    const mz = await Merklizer.merklizeJSONLD(JSON.stringify(credential), {
+      documentLoader: cacheLoader()
+    });
+    const rootBefore = (await mz.root()).bigInt();
+    console.log('root before', rootBefore.toString());
+
+    const loaderWithRevNonceTypeExist = (opts?: Options): DocumentLoader => {
+      const cache = new Map<string, RemoteDocument>();
+      cache.set(W3C_CREDENTIAL_2018, {
+        document: W3C_VC_SCHEMA,
+        documentUrl: W3C_CREDENTIAL_2018
+      });
+      cache.set('https://schema.iden3.io/core/jsonld/iden3proofs.jsonld', {
+        document: JSON.parse(
+          `{"@context":{"@version":1.1,"@protected":true,"id":"@id","type":"@type","Iden3SparseMerkleTreeProof":{"@id":"https://schema.iden3.io/core/jsonld/iden3proofs.jsonld#Iden3SparseMerkleTreeProof","@context":{"@version":1.1,"@protected":true,"@propagate":true,"id":"@id","type":"@type","sec":"https://w3id.org/security#","@vocab":"https://schema.iden3.io/core/vocab/Iden3SparseMerkleTreeProof.md#","xsd":"http://www.w3.org/2001/XMLSchema#","mtp":{"@id":"https://schema.iden3.io/core/jsonld/iden3proofs.jsonld#SparseMerkleTreeProof","@type":"SparseMerkleTreeProof"},"coreClaim":{"@id":"coreClaim","@type":"xsd:string"},"issuerData":{"@id":"issuerData","@context":{"@version":1.1,"state":{"@id":"state","@context":{"txId":{"@id":"txId","@type":"xsd:string"},"blockTimestamp":{"@id":"blockTimestamp","@type":"xsd:integer"},"blockNumber":{"@id":"blockNumber","@type":"xsd:integer"},"rootOfRoots":{"@id":"rootOfRoots","@type":"xsd:string"},"claimsTreeRoot":{"@id":"claimsTreeRoot","@type":"xsd:string"},"revocationTreeRoot":{"@id":"revocationTreeRoot","@type":"xsd:string"},"authCoreClaim":{"@id":"authCoreClaim","@type":"xsd:string"},"value":{"@id":"value","@type":"xsd:string"}}}}}}},"SparseMerkleTreeProof":{"@id":"https://schema.iden3.io/core/jsonld/iden3proofs.jsonld#SparseMerkleTreeProof","@context":{"@version":1.1,"@protected":true,"id":"@id","type":"@type","sec":"https://w3id.org/security#","smt-proof-vocab":"https://schema.iden3.io/core/vocab/SparseMerkleTreeProof.md#","xsd":"http://www.w3.org/2001/XMLSchema#","existence":{"@id":"smt-proof-vocab:existence","@type":"xsd:boolean"},"revocationNonce":{"@id":"smt-proof-vocab:revocationNonce","@type":"xsd:number"},"siblings":{"@id":"smt-proof-vocab:siblings","@container":"@list"},"nodeAux":"@nest","hIndex":{"@id":"smt-proof-vocab:hIndex","@nest":"nodeAux","@type":"xsd:string"},"hValue":{"@id":"smt-proof-vocab:hValue","@nest":"nodeAux","@type":"xsd:string"}}},"BJJSignature2021":{"@id":"https://schema.iden3.io/core/jsonld/iden3proofs.jsonld#BJJSignature2021","@context":{"@version":1.1,"@protected":true,"id":"@id","@vocab":"https://schema.iden3.io/core/vocab/BJJSignature2021.md#","@propagate":true,"type":"@type","xsd":"http://www.w3.org/2001/XMLSchema#","coreClaim":{"@id":"coreClaim","@type":"xsd:string"},"issuerData":{"@id":"issuerData","@context":{"@version":1.1,"authCoreClaim":{"@id":"authCoreClaim","@type":"xsd:string"},"mtp":{"@id":"https://schema.iden3.io/core/jsonld/iden3proofs.jsonld#SparseMerkleTreeProof","@type":"SparseMerkleTreeProof"},"revocationStatus":{"@id":"revocationStatus","@type":"@id"},"state":{"@id":"state","@context":{"@version":1.1,"rootOfRoots":{"@id":"rootOfRoots","@type":"xsd:string"},"claimsTreeRoot":{"@id":"claimsTreeRoot","@type":"xsd:string"},"revocationTreeRoot":{"@id":"revocationTreeRoot","@type":"xsd:string"},"value":{"@id":"value","@type":"xsd:string"}}}}},"signature":{"@id":"signature","@type":"https://w3id.org/security#multibase"},"domain":"https://w3id.org/security#domain","creator":{"@id":"creator","@type":"http://www.w3.org/2001/XMLSchema#string"},"challenge":"https://w3id.org/security#challenge","created":{"@id":"created","@type":"http://www.w3.org/2001/XMLSchema#dateTime"},"expires":{"@id":"https://w3id.org/security#expiration","@type":"http://www.w3.org/2001/XMLSchema#dateTime"},"nonce":"https://w3id.org/security#nonce","proofPurpose":{"@id":"https://w3id.org/security#proofPurpose","@type":"@vocab","@context":{"@protected":true,"id":"@id","type":"@type","assertionMethod":{"@id":"https://w3id.org/security#assertionMethod","@type":"@id","@container":"@set"},"authentication":{"@id":"https://w3id.org/security#authenticationMethod","@type":"@id","@container":"@set"},"capabilityInvocation":{"@id":"https://w3id.org/security#capabilityInvocationMethod","@type":"@id","@container":"@set"},"capabilityDelegation":{"@id":"https://w3id.org/security#capabilityDelegationMethod","@type":"@id","@container":"@set"},"keyAgreement":{"@id":"https://w3id.org/security#keyAgreementMethod","@type":"@id","@container":"@set"}}},"proofValue":{"@id":"https://w3id.org/security#proofValue","@type":"https://w3id.org/security#multibase"},"verificationMethod":{"@id":"https://w3id.org/security#verificationMethod","@type":"@id"}}},"Iden3ReverseSparseMerkleTreeProof":{"@id":"https://schema.iden3.io/core/jsonld/iden3proofs.jsonld#Iden3ReverseSparseMerkleTreeProof","@context":{"@version":1.1,"@protected":true,"id":"@id","type":"@type","iden3-reverse-sparse-merkle-tree-proof-vocab":"https://schema.iden3.io/core/vocab/Iden3ReverseSparseMerkleTreeProof.md#","revocationNonce":{"@id":"den3-reverse-sparse-merkle-tree-proof-vocab:revocationNonce","@type":"xsd:integer"},"statusIssuer":{"@context":{"@version":1.1,"@protected":true,"id":"@id","type":"@type"},"@id":"iden3-reverse-sparse-merkle-tree-proof-vocab:statusIssuer"}}},"Iden3commRevocationStatusV1.0":{"@id":"https://schema.iden3.io/core/jsonld/iden3proofs.jsonld#Iden3commRevocationStatusV1.0","@context":{"@version":1.1,"@protected":true,"id":"@id","type":"@type","iden3-comm-revocation-statusV1.0-vocab":"https://schema.iden3.io/core/vocab/Iden3commRevocationStatusV1.0.md#","revocationNonce":"iden3-comm-revocation-statusV1.0-vocab:revocationNonce","statusIssuer":{"@context":{"@version":1.1,"@protected":true,"id":"@id","type":"@type"},"@id":"iden3-comm-revocation-statusV1.0-vocab:statusIssuer"}}},"Iden3OnchainSparseMerkleTreeProof2023":{"@id":"https://schema.iden3.io/core/jsonld/iden3proofs.jsonld#Iden3OnchainSparseMerkleTreeProof2023","@context":{"@version":1.1,"@protected":true,"id":"@id","type":"@type","iden3-onchain-sparse-merkle-tree-proof-2023-vocab":"https://schema.iden3.io/core/vocab/Iden3OnchainSparseMerkleTreeProof2023.md#","revocationNonce":"iden3-onchain-sparse-merkle-tree-proof-2023-vocab:revocationNonce","statusIssuer":{"@context":{"@version":1.1,"@protected":true,"id":"@id","type":"@type"},"@id":"iden3-onchain-sparse-merkle-tree-proof-2023-vocab:statusIssuer"}}},"JsonSchema2023":"https://www.w3.org/ns/credentials#JsonSchema2023","Iden3RefreshService2023":"https://schema.iden3.io/core/jsonld/iden3proofs.jsonld#Iden3RefreshService2023"}}`
+        ),
+        documentUrl: 'https://schema.iden3.io/core/jsonld/iden3proofs.jsonld'
+      });
+      return async (url): Promise<RemoteDocument> => {
+        let remoteDoc = cache.get(url);
+        if (remoteDoc) {
+          return remoteDoc;
+        }
+        remoteDoc = await getDocumentLoader(opts)(url);
+        cache.set(url, remoteDoc);
+        return remoteDoc;
+      };
+    };
+
+    const mzAfter = await Merklizer.merklizeJSONLD(JSON.stringify(credential), {
+      documentLoader: loaderWithRevNonceTypeExist()
+    });
+    const rootAfter = (await mzAfter.root()).bigInt();
+    console.log('root after', rootAfter.toString());
+    expect(rootAfter.toString()).toEqual(rootBefore.toString());
   });
 });
 
