@@ -1,6 +1,6 @@
 {
   "name": "@iden3/js-jsonld-merklization",
-  "version": "1.7.1",
+  "version": "1.7.2",
   "description": "json ld merklization library",
   "source": "./src/index.ts",
   "exports": {
@@ -54,8 +54,8 @@
     "vitest": "^3.2.4"
   },
   "peerDependencies": {
-    "@iden3/js-crypto": "1.3.1",
-    "@iden3/js-merkletree": "1.5.0"
+    "@iden3/js-crypto": "1.3.2",
+    "@iden3/js-merkletree": "1.5.1"
   },
   "dependencies": {
     "@js-temporal/polyfill": "0.5.1",
