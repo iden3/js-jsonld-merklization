@@ -476,12 +476,383 @@ describe('tests merklization', () => {
       );
     });
 
-    it('test Merklizer with path as shortcut string', async () => {
-      const mz = await Merklizer.merklizeJSONLD(testDocument, { documentLoader: cacheLoader() });
-      const path = await mz.resolveDocPath('credentialSubject.1.birthCountry', {
+    it.only('test Merklizer with path as shortcut string', async () => {
+      const testDocument2 = `{
+  "id": "urn:b1b394af-a104-478a-b872-fe557f648990",
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://schema.iden3.io/core/jsonld/iden3proofs.jsonld",
+    "ipfs://QmZbsTnRwtCmbdg3r9o7Txid37LmvPcvmzVi1Abvqu1WKL"
+  ],
+  "type": [
+    "VerifiableCredential",
+    "BasicPerson"
+  ],
+  "expirationDate": "2058-07-10T11:33:20.000Z",
+  "issuanceDate": "2026-06-10T09:04:47.305Z",
+  "credentialSubject": {
+    "id": "did:iden3:polygon:amoy:xDLAgEFPZFhRbTyp8Xe3ob7Lm52Qk5XULGQgu7yBS",
+    "fullName": "John Doe",
+    "firstName": "John",
+    "familyName": "Doe",
+    "dateOfBirth": 838531598,
+    "governmentIdentifier": "RRRRR",
+    "governmentIdentifierType": "passport",
+    "placeOfBirth": {
+      "countryCode": "UA-ua"
+    },
+    "type": "BasicPerson"
+  },
+  "credentialStatus": {
+    "id": "https://rhs-staging.polygonid.me/node?state=ed17a07e8b78ab979507829fa4d37e663ca5906714d506dec8a174d949c5eb09",
+    "type": "Iden3ReverseSparseMerkleTreeProof",
+    "revocationNonce": 2837597946,
+    "statusIssuer": {
+      "id": "https://rhs-staging.polygonid.me/node?state=abc123",
+      "type": "SparseMerkleTreeProof",
+      "revocationNonce": 28375979
+    }
+  },
+  "issuer": "did:iden3:polygon:amoy:xCRp75DgAdS63W65fmXHz6p9DwdonuRU9e46DifhX",
+  "credentialSchema": {
+    "id": "ipfs://QmTojMfyzxehCJVw7aUrdWuxdF68R7oLYooGHCUr9wwsef",
+    "type": "JsonSchema2023"
+  },
+  "proof": [
+    {
+      "issuerData": {
+        "id": "did:iden3:polygon:amoy:xCRp75DgAdS63W65fmXHz6p9DwdonuRU9e46DifhX",
+        "state": {
+          "rootOfRoots": "0000000000000000000000000000000000000000000000000000000000000000",
+          "revocationTreeRoot": "0000000000000000000000000000000000000000000000000000000000000000",
+          "claimsTreeRoot": "6091193ec58a6c020183c2d889a92c32410f31812595f228d67a2bf37e04a729",
+          "value": "ed17a07e8b78ab979507829fa4d37e663ca5906714d506dec8a174d949c5eb09"
+        },
+        "mtp": {
+          "existence": true,
+          "siblings": []
+        },
+        "authCoreClaim": "cca3371a6cb1b715004407e325bd993c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000bd045c3101b2a0bcd60106ff21a680d86af3dbbdec406764f93ab82849410e1c27eb6114eeff7eb030b34d1db28b46d61cb6d7efbec190a0b1c1664664ced80f0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "credentialStatus": {
+          "id": "https://rhs-staging.polygonid.me/node?state=ed17a07e8b78ab979507829fa4d37e663ca5906714d506dec8a174d949c5eb09",
+          "type": "Iden3ReverseSparseMerkleTreeProof",
+          "revocationNonce": 0
+        }
+      },
+      "type": "BJJSignature2021",
+      "coreClaim": "7ed2bce3d6fab6efe706a7e76a0881dd2a00000000000000000000000000000001138c8ddaf071794a4cc9c9c43d596dcc8a1d9829f6946e14d90d166c780d007207775405be85ca7d3cfadb865483746694f3490bd73de892cf1536d57e762d0000000000000000000000000000000000000000000000000000000000000000fa4e22a90000000080d481a60000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "signature": "1c1cf7e13ba674430ce9af4889770da1c7adc5b6bad51a665a8e2091dd5ee41311f67ad67bce63ceb8e89d8f0ce37bd73bcb8c62bfe9993961dc8840399de504"
+    }
+  ]
+}`;
+      const mz = await Merklizer.merklizeJSONLD(testDocument2, { documentLoader: cacheLoader() });
+      const path = await mz.resolveDocPath('credentialStatus.statusIssuer.revocationNonce', {
         documentLoader: cacheLoader()
       });
 
+      const doc = `{
+  "@context": {
+    "@version": 1.1,
+    "id": "@id",
+    "type": "@type",
+    "Iden3SparseMerkleTreeProof": {
+      "@id": "https://schema.iden3.io/core/jsonld/iden3proofs.jsonld#Iden3SparseMerkleTreeProof",
+      "@context": {
+        "@version": 1.1,
+        "@propagate": true,
+        "id": "@id",
+        "type": "@type",
+        "sec": "https://w3id.org/security#",
+        "@vocab": "https://schema.iden3.io/core/vocab/Iden3SparseMerkleTreeProof.md#",
+        "xsd": "http://www.w3.org/2001/XMLSchema#",
+        "mtp": {
+          "@id": "https://schema.iden3.io/core/jsonld/iden3proofs.jsonld#SparseMerkleTreeProof",
+          "@type": "SparseMerkleTreeProof"
+        },
+        "coreClaim": {
+          "@id": "coreClaim",
+          "@type": "xsd:string"
+        },
+        "issuerData": {
+          "@id": "issuerData",
+          "@context": {
+            "@version": 1.1,
+            "state": {
+              "@id": "state",
+              "@context": {
+                "txId": {
+                  "@id": "txId",
+                  "@type": "xsd:string"
+                },
+                "blockTimestamp": {
+                  "@id": "blockTimestamp",
+                  "@type": "xsd:integer"
+                },
+                "blockNumber": {
+                  "@id": "blockNumber",
+                  "@type": "xsd:integer"
+                },
+                "rootOfRoots": {
+                  "@id": "rootOfRoots",
+                  "@type": "xsd:string"
+                },
+                "claimsTreeRoot": {
+                  "@id": "claimsTreeRoot",
+                  "@type": "xsd:string"
+                },
+                "revocationTreeRoot": {
+                  "@id": "revocationTreeRoot",
+                  "@type": "xsd:string"
+                },
+                "authCoreClaim": {
+                  "@id": "authCoreClaim",
+                  "@type": "xsd:string"
+                },
+                "value": {
+                  "@id": "value",
+                  "@type": "xsd:string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "SparseMerkleTreeProof": {
+      "@id": "https://schema.iden3.io/core/jsonld/iden3proofs.jsonld#SparseMerkleTreeProof",
+      "@context": {
+        "@version": 1.1,
+        "id": "@id",
+        "type": "@type",
+        "sec": "https://w3id.org/security#",
+        "smt-proof-vocab": "https://schema.iden3.io/core/vocab/SparseMerkleTreeProof.md#",
+        "xsd": "http://www.w3.org/2001/XMLSchema#",
+        "existence": {
+          "@id": "smt-proof-vocab:existence",
+          "@type": "xsd:boolean"
+        },
+        "revocationNonce": {
+          "@id": "smt-proof-vocab:revocationNonce",
+          "@type": "xsd:number"
+        },
+        "siblings": {
+          "@id": "smt-proof-vocab:siblings",
+          "@container": "@list"
+        },
+        "nodeAux": "@nest",
+        "hIndex": {
+          "@id": "smt-proof-vocab:hIndex",
+          "@nest": "nodeAux",
+          "@type": "xsd:string"
+        },
+        "hValue": {
+          "@id": "smt-proof-vocab:hValue",
+          "@nest": "nodeAux",
+          "@type": "xsd:string"
+        }
+      }
+    },
+    "BJJSignature2021": {
+      "@id": "https://schema.iden3.io/core/jsonld/iden3proofs.jsonld#BJJSignature2021",
+      "@context": {
+        "@version": 1.1,
+        "@protected": true,
+        "id": "@id",
+        "@vocab": "https://schema.iden3.io/core/vocab/BJJSignature2021.md#",
+        "@propagate": true,
+        "type": "@type",
+        "xsd": "http://www.w3.org/2001/XMLSchema#",
+        "coreClaim": {
+          "@id": "coreClaim",
+          "@type": "xsd:string"
+        },
+        "issuerData": {
+          "@id": "issuerData",
+          "@context": {
+            "@version": 1.1,
+            "authCoreClaim": {
+              "@id": "authCoreClaim",
+              "@type": "xsd:string"
+            },
+            "mtp": {
+              "@id": "https://schema.iden3.io/core/jsonld/iden3proofs.jsonld#SparseMerkleTreeProof",
+              "@type": "SparseMerkleTreeProof"
+            },
+            "revocationStatus": {
+              "@id": "revocationStatus",
+              "@type": "@id"
+            },
+            "state": {
+              "@id": "state",
+              "@context": {
+                "@version": 1.1,
+                "rootOfRoots": {
+                  "@id": "rootOfRoots",
+                  "@type": "xsd:string"
+                },
+                "claimsTreeRoot": {
+                  "@id": "claimsTreeRoot",
+                  "@type": "xsd:string"
+                },
+                "revocationTreeRoot": {
+                  "@id": "revocationTreeRoot",
+                  "@type": "xsd:string"
+                },
+                "value": {
+                  "@id": "value",
+                  "@type": "xsd:string"
+                }
+              }
+            }
+          }
+        },
+        "signature": {
+          "@id": "signature",
+          "@type": "https://w3id.org/security#multibase"
+        },
+        "domain": "https://w3id.org/security#domain",
+        "creator": {
+          "@id": "creator",
+          "@type": "http://www.w3.org/2001/XMLSchema#string"
+        },
+        "challenge": "https://w3id.org/security#challenge",
+        "created": {
+          "@id": "created",
+          "@type": "http://www.w3.org/2001/XMLSchema#dateTime"
+        },
+        "expires": {
+          "@id": "https://w3id.org/security#expiration",
+          "@type": "http://www.w3.org/2001/XMLSchema#dateTime"
+        },
+        "nonce": "https://w3id.org/security#nonce",
+        "proofPurpose": {
+          "@id": "https://w3id.org/security#proofPurpose",
+          "@type": "@vocab",
+          "@context": {
+            "@protected": true,
+            "id": "@id",
+            "type": "@type",
+            "assertionMethod": {
+              "@id": "https://w3id.org/security#assertionMethod",
+              "@type": "@id",
+              "@container": "@set"
+            },
+            "authentication": {
+              "@id": "https://w3id.org/security#authenticationMethod",
+              "@type": "@id",
+              "@container": "@set"
+            },
+            "capabilityInvocation": {
+              "@id": "https://w3id.org/security#capabilityInvocationMethod",
+              "@type": "@id",
+              "@container": "@set"
+            },
+            "capabilityDelegation": {
+              "@id": "https://w3id.org/security#capabilityDelegationMethod",
+              "@type": "@id",
+              "@container": "@set"
+            },
+            "keyAgreement": {
+              "@id": "https://w3id.org/security#keyAgreementMethod",
+              "@type": "@id",
+              "@container": "@set"
+            }
+          }
+        },
+        "proofValue": {
+          "@id": "https://w3id.org/security#proofValue",
+          "@type": "https://w3id.org/security#multibase"
+        },
+        "verificationMethod": {
+          "@id": "https://w3id.org/security#verificationMethod",
+          "@type": "@id"
+        }
+      }
+    },
+    "Iden3ReverseSparseMerkleTreeProof": {
+      "@id": "https://schema.iden3.io/core/jsonld/iden3proofs.jsonld#Iden3ReverseSparseMerkleTreeProof",
+      "@context": {
+        "@version": 1.1,
+        "id": "@id",
+        "type": "@type",
+        "iden3-reverse-sparse-merkle-tree-proof-vocab": "https://schema.iden3.io/core/vocab/Iden3ReverseSparseMerkleTreeProof.md#",
+        "xsd": "http://www.w3.org/2001/XMLSchema#",
+        "revocationNonce": {
+          "@id": "iden3-reverse-sparse-merkle-tree-proof-vocab:revocationNonce",
+          "@type": "xsd:integer"
+        },
+        "statusIssuer": {
+          "@context": {
+            "@version": 1.1,
+            "id": "@id",
+            "type": "@type"
+          },
+          "@id": "iden3-reverse-sparse-merkle-tree-proof-vocab:statusIssuer"
+        }
+      }
+    },
+    "Iden3commRevocationStatusV1.0": {
+      "@id": "https://schema.iden3.io/core/jsonld/iden3proofs.jsonld#Iden3commRevocationStatusV1.0",
+      "@context": {
+        "@version": 1.1,
+        "@protected": true,
+        "id": "@id",
+        "type": "@type",
+        "iden3-comm-revocation-statusV1.0-vocab": "https://schema.iden3.io/core/vocab/Iden3commRevocationStatusV1.0.md#",
+        "xsd": "http://www.w3.org/2001/XMLSchema#",
+        "revocationNonce": {
+          "@id": "iden3-comm-revocation-statusV1.0-vocab:revocationNonce",
+          "@type": "xsd:integer"
+        },
+        "statusIssuer": {
+          "@context": {
+            "@version": 1.1,
+            "@protected": true,
+            "id": "@id",
+            "type": "@type"
+          },
+          "@id": "iden3-comm-revocation-statusV1.0-vocab:statusIssuer"
+        }
+      }
+    },
+    "Iden3OnchainSparseMerkleTreeProof2023": {
+      "@id": "https://schema.iden3.io/core/jsonld/iden3proofs.jsonld#Iden3OnchainSparseMerkleTreeProof2023",
+      "@context": {
+        "@version": 1.1,
+        "@protected": true,
+        "id": "@id",
+        "type": "@type",
+        "iden3-onchain-sparse-merkle-tree-proof-2023-vocab": "https://schema.iden3.io/core/vocab/Iden3OnchainSparseMerkleTreeProof2023.md#",
+        "xsd": "http://www.w3.org/2001/XMLSchema#",
+        "revocationNonce": {
+          "@id": "iden3-onchain-sparse-merkle-tree-proof-2023-vocab:revocationNonce",
+          "@type": "xsd:integer"  
+        },
+        "statusIssuer": {
+          "@context": {
+            "@version": 1.1,
+            "@protected": true,
+            "id": "@id",
+            "type": "@type"
+          },
+          "@id": "iden3-onchain-sparse-merkle-tree-proof-2023-vocab:statusIssuer"
+        }
+      }
+    },
+    "JsonSchema2023": "https://www.w3.org/ns/credentials#JsonSchema2023",
+    "Iden3RefreshService2023": "https://schema.iden3.io/core/jsonld/iden3proofs.jsonld#Iden3RefreshService2023"
+  }
+}`;
+      const typeFromContext = await Path.newTypeFromContext(
+        doc,
+        `SparseMerkleTreeProof.revocationNonce`
+      );
+
+      const path2 = await Path.getContextPathKey(
+        doc,
+        `Iden3ReverseSparseMerkleTreeProof`,
+        `statusIssuer.revocationNonce`
+      );
       const { proof, value } = await mz.proof(path);
 
       const pathMTEntry = await path.mtEntry();
