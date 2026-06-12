@@ -546,9 +546,16 @@ describe('tests merklization', () => {
   ]
 }`;
       const mz = await Merklizer.merklizeJSONLD(testDocument2, { documentLoader: cacheLoader() });
-      const path = await mz.resolveDocPath('credentialStatus.statusIssuer.revocationNonce', {
+      const path = await mz.resolveDocPath('credentialStatus.id', {
         documentLoader: cacheLoader()
       });
+
+      // todo: remove @id to have value in proof
+      path.parts = [path.parts[0]];
+
+      const { proof, value } = await mz.proof(path);
+
+      const pathMTEntry = await path.mtEntry();
 
       const doc = `{
   "@context": {
@@ -842,7 +849,7 @@ describe('tests merklization', () => {
     "JsonSchema2023": "https://www.w3.org/ns/credentials#JsonSchema2023",
     "Iden3RefreshService2023": "https://schema.iden3.io/core/jsonld/iden3proofs.jsonld#Iden3RefreshService2023"
   }
-}`;
+      }`;
       const typeFromContext = await Path.newTypeFromContext(
         doc,
         `SparseMerkleTreeProof.revocationNonce`
@@ -853,9 +860,7 @@ describe('tests merklization', () => {
         `Iden3ReverseSparseMerkleTreeProof`,
         `statusIssuer.revocationNonce`
       );
-      const { proof, value } = await mz.proof(path);
-
-      const pathMTEntry = await path.mtEntry();
+    
 
       expect(value?.isString()).toBeTruthy();
       const valueStr = value?.asString() ?? '';
