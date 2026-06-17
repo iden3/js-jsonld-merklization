@@ -3,5 +3,5 @@
   "import": ["@iden3/biome-config/cspell"],
   "useGitignore": true,
   "ignorePaths": ["tests/testdata/**", "dist/**", "node_modules/**", "package-lock.json"],
-  "words": ["Ggok", "Jggg", "kubo", "multigraph", "RDFC", "URDNA"]
+  "words": ["Ggok", "Jggg", "kubo", "multigraph", "RDFC", "URDNA", "onwarn"]
 }
