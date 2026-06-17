@@ -1,35 +1,36 @@
 /* eslint-disable no-console */
-import { readFile } from 'fs/promises';
-import { Merklizer } from '../src/merklizer';
+
+import { readFile } from 'node:fs/promises';
+import { poseidon } from '@iden3/js-crypto';
+import { InMemoryDB, Merkletree, str2Bytes, verifyProof } from '@iden3/js-merkletree';
+import { Temporal } from '@js-temporal/polyfill';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { MerklizationConstants } from '../src/constants';
-import { RDFEntry } from '../src/rdf-entry';
+import { normalizeIPFSNodeURL } from '../src/loaders/jsonld-loader';
+import { Merklizer } from '../src/merklizer';
+import { MtValue } from '../src/mt-value';
+import { Path } from '../src/path';
+import { DEFAULT_HASHER } from '../src/poseidon';
 import { RDFDataset } from '../src/rdf-dataset';
+import { RDFEntry } from '../src/rdf-entry';
+import { cacheLoader } from './cache';
 import {
-  credentials_v1,
   arr_test,
-  kycSchema_jsonld,
+  credentials_v1,
   doc1,
+  docWithDouble,
+  ipfsDocument,
+  kycSchema_jsonld,
+  kycV102,
   multigraphDoc,
   multigraphDoc2,
-  testDocument,
   nestedFieldDocument,
-  docWithDouble,
-  vp,
-  ipfsDocument,
-  kycV102,
-  testDocumentIPFS
+  testDocument,
+  testDocumentIPFS,
+  vp
 } from './data';
-import { Merkletree, verifyProof, InMemoryDB, str2Bytes } from '@iden3/js-merkletree';
-import { DEFAULT_HASHER } from '../src/poseidon';
-import { Path } from '../src/path';
-import { MtValue } from '../src/mt-value';
-import { Temporal } from '@js-temporal/polyfill';
 import { TestHasher } from './hasher';
-import { poseidon } from '@iden3/js-crypto';
-import { normalizeIPFSNodeURL } from '../src/loaders/jsonld-loader';
 import customSchemaJSON from './testdata/custom-schema.json';
-import { cacheLoader } from './cache';
-import { describe, it, expect, beforeAll } from 'vitest';
 
 describe('tests merklization', () => {
   it('multigraph TestEntriesFromRDF', async () => {
@@ -525,6 +526,7 @@ describe('tests merklization', () => {
       },
       {
         // math.MinInt64 in golang implementation
+        // biome-ignore lint/correctness/noPrecisionLoss: intentional MinInt64 boundary value
         input: -9223372036854775808,
         want: '21888242871839275222246405745257275088548364400416034343688980814538953719809'
       }
@@ -1141,76 +1143,71 @@ describe('tests merklization', () => {
   });
 });
 
-describe('merklize document with ipfs context', () => {
-  // node --experimental-vm-modules node_modules/jest/bin/jest.js -t 'set kubo client' tests/merklization.test.ts
+describe.skipIf(!process.env.IPFS_URL || !process.env.IPFS_GATEWAY_URL)(
+  'merklize document with ipfs context',
+  () => {
+    // node --experimental-vm-modules node_modules/jest/bin/jest.js -t 'set kubo client' tests/merklization.test.ts
 
-  const ipfsNodeURL = process.env.IPFS_URL ?? null;
-  const ipfsGatewayURL = process.env.IPFS_GATEWAY_URL ?? null;
+    const ipfsNodeURL = process.env.IPFS_URL ?? null;
+    const ipfsGatewayURL = process.env.IPFS_GATEWAY_URL ?? null;
 
-  if (!ipfsNodeURL) {
-    throw new Error('IPFS_URL is not set');
+    beforeAll(async () => {
+      await pushSchemasToIPFS(ipfsNodeURL);
+    });
+
+    it('ipfsNodeURL is set', async () => {
+      const opts = {
+        documentLoader: cacheLoader({
+          ipfsNodeURL
+        })
+      };
+
+      const mz: Merklizer = await Merklizer.merklizeJSONLD(ipfsDocument, opts);
+      expect((await mz.root()).bigInt().toString()).toEqual(
+        '19309047812100087948241250053335720576191969395309912987389452441269932261840'
+      );
+    });
+
+    it('ipfsGatewayURL is set', async () => {
+      const opts = {
+        documentLoader: cacheLoader({
+          ipfsGatewayURL
+        })
+      };
+      const mz: Merklizer = await Merklizer.merklizeJSONLD(ipfsDocument, opts);
+      expect((await mz.root()).bigInt().toString()).toEqual(
+        '19309047812100087948241250053335720576191969395309912987389452441269932261840'
+      );
+    });
+
+    it('IPFS is not configured', async () => {
+      await expect(
+        Merklizer.merklizeJSONLD(ipfsDocument, { documentLoader: cacheLoader() })
+      ).rejects.toThrow('Dereferencing a URL did not result in a valid JSON-LD object');
+    });
+
+    it('TestExistenceProofIPFS', async () => {
+      const opts = {
+        documentLoader: cacheLoader({
+          ipfsGatewayURL
+        })
+      };
+      const mz = await Merklizer.merklizeJSONLD(testDocumentIPFS, opts);
+      const path = await mz.resolveDocPath('credentialSubject.testNewTypeInt', opts);
+      const wantPath = new Path([
+        'https://www.w3.org/2018/credentials#credentialSubject',
+        'urn:uuid:0a8092e3-7100-4068-ba67-fae502cc6e7b#testNewTypeInt'
+      ]);
+
+      expect(wantPath).toEqual(path);
+      const { proof, value } = await mz.proof(path);
+      expect(proof.existence).toBe(true);
+
+      const i = value?.asBigInt();
+      expect(1n).toEqual(i);
+    });
   }
-
-  if (!ipfsGatewayURL) {
-    throw new Error('IPFS_GATEWAY_URL is not set');
-  }
-
-  beforeAll(async () => {
-    await pushSchemasToIPFS(ipfsNodeURL);
-  });
-
-  it('ipfsNodeURL is set', async () => {
-    const opts = {
-      documentLoader: cacheLoader({
-        ipfsNodeURL
-      })
-    };
-
-    const mz: Merklizer = await Merklizer.merklizeJSONLD(ipfsDocument, opts);
-    expect((await mz.root()).bigInt().toString()).toEqual(
-      '19309047812100087948241250053335720576191969395309912987389452441269932261840'
-    );
-  });
-
-  it('ipfsGatewayURL is set', async () => {
-    const opts = {
-      documentLoader: cacheLoader({
-        ipfsGatewayURL
-      })
-    };
-    const mz: Merklizer = await Merklizer.merklizeJSONLD(ipfsDocument, opts);
-    expect((await mz.root()).bigInt().toString()).toEqual(
-      '19309047812100087948241250053335720576191969395309912987389452441269932261840'
-    );
-  });
-
-  it('IPFS is not configured', async () => {
-    await expect(
-      Merklizer.merklizeJSONLD(ipfsDocument, { documentLoader: cacheLoader() })
-    ).rejects.toThrow('Dereferencing a URL did not result in a valid JSON-LD object');
-  });
-
-  it('TestExistenceProofIPFS', async () => {
-    const opts = {
-      documentLoader: cacheLoader({
-        ipfsGatewayURL
-      })
-    };
-    const mz = await Merklizer.merklizeJSONLD(testDocumentIPFS, opts);
-    const path = await mz.resolveDocPath('credentialSubject.testNewTypeInt', opts);
-    const wantPath = new Path([
-      'https://www.w3.org/2018/credentials#credentialSubject',
-      'urn:uuid:0a8092e3-7100-4068-ba67-fae502cc6e7b#testNewTypeInt'
-    ]);
-
-    expect(wantPath).toEqual(path);
-    const { proof, value } = await mz.proof(path);
-    expect(proof.existence).toBe(true);
-
-    const i = value?.asBigInt();
-    expect(1n).toEqual(i);
-  });
-});
+);
 
 async function pushSchemasToIPFS(ipfsNodeURL: string): Promise<void> {
   const getUrl = (uri: string, method: string): { url: string; headers: unknown } => {
@@ -1219,7 +1216,7 @@ async function pushSchemasToIPFS(ipfsNodeURL: string): Promise<void> {
     const headers =
       url.username && url.password
         ? {
-            authorization: `Basic ${btoa(url.username + ':' + url.password)}`
+            authorization: `Basic ${btoa(`${url.username}:${url.password}`)}`
           }
         : {};
     url.username = '';
@@ -1244,8 +1241,7 @@ async function pushSchemasToIPFS(ipfsNodeURL: string): Promise<void> {
     if (records.length !== 2) {
       throw new Error('IPFS records not found');
     }
-  } catch (e) {
-    console.warn('try to upload document', e);
+  } catch (_e) {
     const citizenshipData = await readFile('tests/testdata/citizenship-v1.jsonld');
     const bbsData = await readFile('tests/testdata/dir1/dir2/bbs-v2.jsonld');
     const formData = new FormData();

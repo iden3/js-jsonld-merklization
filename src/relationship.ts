@@ -1,11 +1,11 @@
-import { Hasher, NodeType } from './types/types';
-import { Quad } from 'n3';
+import type { Quad } from 'n3';
+import { DatasetIdx } from './dataset-idx';
 import { Path } from './path';
-import { RefTp } from './ref-tp';
+import { DEFAULT_HASHER } from './poseidon';
 import { QuadArrKey } from './quad-arr-key';
 import { RDFDataset } from './rdf-dataset';
-import { DatasetIdx } from './dataset-idx';
-import { DEFAULT_HASHER } from './poseidon';
+import { RefTp } from './ref-tp';
+import { type Hasher, NodeType } from './types/types';
 
 export class Relationship {
   constructor(

@@ -1,14 +1,16 @@
-import { MerklizationConstants } from './constants';
-import { Hasher } from './types/types';
-import { Value } from './types/types';
-import { DEFAULT_HASHER } from './poseidon';
 import { Temporal } from '@js-temporal/polyfill';
+import { MerklizationConstants } from './constants';
+import { DEFAULT_HASHER } from './poseidon';
+import type { Hasher, Value } from './types/types';
 import { minMaxFromPrime } from './utils';
 
 const bytesEncoder = new TextEncoder();
 
 export class MtValue {
-  constructor(public readonly value: Value, private readonly h: Hasher = DEFAULT_HASHER) {}
+  constructor(
+    public readonly value: Value,
+    private readonly h: Hasher = DEFAULT_HASHER
+  ) {}
 
   isString(): boolean {
     return typeof this.value === 'string';
@@ -95,7 +97,7 @@ export class MtValue {
     return h.prime() + BigInt(v);
   }
 
-  static mkValueUInt = (h: Hasher, v: bigint): bigint => {
+  static mkValueUInt = (_h: Hasher, v: bigint): bigint => {
     return BigInt.asUintN(64, v);
   };
 

@@ -8,6 +8,7 @@ declare module 'jsonld/lib/constants.js' {
 
 declare module 'jsonld/lib/JsonLdError.js' {
   class JsonLdError extends Error {
+    // biome-ignore lint/suspicious/noExplicitAny: external library declaration
     constructor(message: string, type: string, details?: any);
     name: string;
     type: string;

@@ -1,8 +1,8 @@
-import { RemoteDocument } from 'jsonld/jsonld-spec';
+import type { RemoteDocument } from 'jsonld/jsonld-spec';
+import type { DocumentLoader } from '../src/loaders/jsonld-loader';
 import { getDocumentLoader } from '../src/options';
-import { Options } from '../src/types/types';
+import type { Options } from '../src/types/types';
 import { W3C_CREDENTIAL_2018, W3C_VC_SCHEMA } from './data';
-import { DocumentLoader } from '../src/loaders/jsonld-loader';
 
 export const cacheLoader = (opts?: Options): DocumentLoader => {
   const cache = new Map<string, RemoteDocument>();

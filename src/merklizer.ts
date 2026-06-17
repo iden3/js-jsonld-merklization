@@ -1,14 +1,14 @@
-import { Hasher, Value, Options } from './types/types';
+import { type Hash, Merkletree, type Proof } from '@iden3/js-merkletree';
 import jsonld from 'jsonld';
-import { Merkletree, Hash, Proof } from '@iden3/js-merkletree';
-import { RDFDataset } from './rdf-dataset';
-import { DEFAULT_HASHER } from './poseidon';
 import { addEntriesToMerkleTree, getMerkleTreeInitParam } from './merkle-tree';
-import { RDFEntry } from './rdf-entry';
-import { Path } from './path';
 import { MtValue } from './mt-value';
-import { convertAnyToString, convertStringToXsdValue } from './utils';
 import { getDocumentLoader, getHasher } from './options';
+import { Path } from './path';
+import { DEFAULT_HASHER } from './poseidon';
+import { RDFDataset } from './rdf-dataset';
+import { RDFEntry } from './rdf-entry';
+import type { Hasher, Options, Value } from './types/types';
+import { convertAnyToString, convertStringToXsdValue } from './utils';
 
 export class Merklizer {
   constructor(
@@ -168,7 +168,7 @@ export class Merklizer {
   }
 
   static async hashValue(dataType: string, value: unknown): Promise<bigint> {
-    return this.hashValueWithHasher(DEFAULT_HASHER, dataType, value);
+    return Merklizer.hashValueWithHasher(DEFAULT_HASHER, dataType, value);
   }
 
   private static async hashValueWithHasher(

@@ -6,3 +6,5 @@ dist
 .vscode
 /tests/proofs/testdata
 .env
+.vitest-attachments
+tests/__screenshots__

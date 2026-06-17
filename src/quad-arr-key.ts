@@ -1,7 +1,7 @@
-import { Quad } from 'n3';
-import { getGraphName } from './utils';
-import { RefTp } from './ref-tp';
+import type { Quad } from 'n3';
+import type { RefTp } from './ref-tp';
 import { NodeType } from './types/types';
+import { getGraphName } from './utils';
 
 export class QuadArrKey {
   subject: RefTp;

@@ -1,6 +1,6 @@
-import { MerklizationConstants } from './constants';
 import { poseidon } from '@iden3/js-crypto';
-import { Hasher } from './types/types';
+import { MerklizationConstants } from './constants';
+import type { Hasher } from './types/types';
 
 export class PoseidonHasher implements Hasher {
   constructor(private readonly _hasher = poseidon) {}

@@ -1,5 +1,5 @@
-import { Temporal } from '@js-temporal/polyfill';
-import { DocumentLoader } from '../loaders/jsonld-loader';
+import type { Temporal } from '@js-temporal/polyfill';
+import type { DocumentLoader } from '../loaders/jsonld-loader';
 
 export interface Options {
   hasher?: Hasher;
