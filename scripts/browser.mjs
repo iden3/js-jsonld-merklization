@@ -16,7 +16,8 @@ const compilerOptions = {
 };
 
 const external = [
-  ...Object.keys(packageJson.peerDependencies), ...Object.keys(packageJson.dependencies)
+  ...Object.keys(packageJson.peerDependencies),
+  ...Object.keys(packageJson.dependencies)
 ];
 
 const config = {
