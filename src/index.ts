@@ -1,10 +1,9 @@
-export { PoseidonHasher } from './poseidon';
-export { Value } from './types/types';
-export { MtValue } from './mt-value';
-export { Merklizer } from './merklizer';
-export { Path } from './path';
-export { Hasher, Options } from './types/types';
-export { MerklizationConstants } from './constants';
-export { getDocumentLoader } from './options';
-export { DocumentLoader } from './loaders/jsonld-loader';
 export { Temporal } from '@js-temporal/polyfill';
+export { MerklizationConstants } from './constants';
+export type { DocumentLoader } from './loaders/jsonld-loader';
+export { Merklizer } from './merklizer';
+export { MtValue } from './mt-value';
+export { getDocumentLoader } from './options';
+export { Path } from './path';
+export { PoseidonHasher } from './poseidon';
+export type { Hasher, Options, Value } from './types/types';

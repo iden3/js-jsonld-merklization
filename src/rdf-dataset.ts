@@ -1,12 +1,12 @@
-import { MerklizationConstants } from './constants';
-import { Parser, Quad, Quad_Subject } from 'n3';
 import jsonld from 'jsonld';
-import { DocumentLoader } from './loaders/jsonld-loader';
+import { Parser, type Quad, type Quad_Subject } from 'n3';
+import { MerklizationConstants } from './constants';
 import { DatasetIdx } from './dataset-idx';
-import { getGraphName } from './utils';
+import type { DocumentLoader } from './loaders/jsonld-loader';
+import { getDocumentLoader } from './options';
 import { RefTp } from './ref-tp';
 import { NodeType } from './types/types';
-import { getDocumentLoader } from './options';
+import { getGraphName } from './utils';
 
 export class RDFDataset {
   constructor(public readonly graphs: Map<string, Quad[]> = new Map()) {}
@@ -33,6 +33,12 @@ export class RDFDataset {
     documentLoader: DocumentLoader = getDocumentLoader()
   ): Promise<RDFDataset> {
     const normalizedData = await jsonld.canonize(doc, {
+      // jsonld@9 reads the canonicalization algorithm from canonizeOptions
+      // (a top-level `algorithm` is ignored). 'URDNA2015' is rdf-canonize's
+      // deprecated alias for the output-identical 'RDFC-1.0' default; pinning
+      // it keeps canonical N-Quads (and thus Merkle roots) stable against
+      // future default changes.
+      canonizeOptions: { algorithm: 'URDNA2015' },
       format: MerklizationConstants.QUADS_FORMAT,
       documentLoader
     });
@@ -153,7 +159,7 @@ export class RDFDataset {
           continue;
         }
 
-        if (qKey.toString() == objKey.toString()) {
+        if (qKey.toString() === objKey.toString()) {
           if (found) {
             throw MerklizationConstants.ERRORS.MULTIPLE_PARENTS_FOUND;
           }

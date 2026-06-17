@@ -1,15 +1,15 @@
-import { Quad } from 'n3';
+import { Temporal } from '@js-temporal/polyfill';
+import type { Quad } from 'n3';
 import { MerklizationConstants } from './constants';
-import { Path } from './path';
-import { Hasher, NodeType, Value } from './types/types';
+import { DatasetIdx } from './dataset-idx';
 import { MtValue } from './mt-value';
+import type { Path } from './path';
 import { DEFAULT_HASHER } from './poseidon';
-import { convertStringToXsdValue, validateValue } from './utils';
+import { QuadArrKey } from './quad-arr-key';
 import { RDFDataset } from './rdf-dataset';
 import { Relationship } from './relationship';
-import { DatasetIdx } from './dataset-idx';
-import { QuadArrKey } from './quad-arr-key';
-import { Temporal } from '@js-temporal/polyfill';
+import { type Hasher, NodeType, type Value } from './types/types';
+import { convertStringToXsdValue, validateValue } from './utils';
 
 export class RDFEntry {
   constructor(

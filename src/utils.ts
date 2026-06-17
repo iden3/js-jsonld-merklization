@@ -1,7 +1,7 @@
-import { Quad } from 'n3';
-import { MerklizationConstants } from './constants';
-import { canonicalDouble, Value, XSDNS } from './types/types';
 import { Temporal } from '@js-temporal/polyfill';
+import type { Quad } from 'n3';
+import { MerklizationConstants } from './constants';
+import { canonicalDouble, type Value, XSDNS } from './types/types';
 
 export function getGraphName(q: Quad): string {
   if (!q.graph.value) {
@@ -114,7 +114,7 @@ export const convertStringToXsdValue = (
     }
 
     case XSDNS.DateTime: {
-      if (isNaN(Date.parse(valueStr))) {
+      if (Number.isNaN(Date.parse(valueStr))) {
         throw new Error(`error: error parsing time string ${valueStr}`);
       }
       const dateRegEx = /^\d{4}-\d{2}-\d{2}$/;

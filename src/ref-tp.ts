@@ -1,8 +1,11 @@
-import { Quad_Subject, Quad_Object, Quad_Graph } from 'n3';
+import type { Quad_Graph, Quad_Object, Quad_Subject } from 'n3';
 import { NodeType } from './types/types';
 
 export class RefTp {
-  constructor(public readonly tp: NodeType, public readonly val: unknown) {}
+  constructor(
+    public readonly tp: NodeType,
+    public readonly val: unknown
+  ) {}
 
   toString(): string {
     return JSON.stringify(this);

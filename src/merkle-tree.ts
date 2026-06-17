@@ -1,5 +1,5 @@
-import { InMemoryDB, str2Bytes, Merkletree } from '@iden3/js-merkletree';
-import { RDFEntry } from './rdf-entry';
+import { InMemoryDB, type Merkletree, str2Bytes } from '@iden3/js-merkletree';
+import type { RDFEntry } from './rdf-entry';
 
 export const getMerkleTreeInitParam = (
   prefix = '',

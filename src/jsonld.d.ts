@@ -1,4 +1,4 @@
-import { JsonLdDocument, RemoteDocument, ParsedCtx } from 'jsonld';
+import { JsonLdDocument, ParsedCtx, RemoteDocument } from 'jsonld';
 
 declare module 'jsonld' {
   export function processContext(
@@ -16,6 +16,17 @@ declare module 'jsonld' {
   }
 
   function canonize(input: JsonLdDocument, options?: JsonLDOpts): Promise<string>;
+
+  // jsonld@9 forwards canonicalization settings via `canonizeOptions` to
+  // rdf-canonize. @types/jsonld predates this, so augment Options.Normalize.
+  namespace Options {
+    interface Normalize {
+      canonizeOptions?: {
+        algorithm?: 'URDNA2015' | 'RDFC-1.0';
+        [key: string]: unknown;
+      };
+    }
+  }
 }
 
 declare module 'jsonld/lib/constants' {

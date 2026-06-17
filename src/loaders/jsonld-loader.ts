@@ -1,8 +1,8 @@
-import { JsonLd, RemoteDocument, Url } from 'jsonld/jsonld-spec';
-import util from 'jsonld/lib/util.js';
+import type { JsonLd, RemoteDocument, Url } from 'jsonld/jsonld-spec';
 import constants from 'jsonld/lib/constants.js';
 import JsonLdError from 'jsonld/lib/JsonLdError.js';
 import urlUtil from 'jsonld/lib/url.js';
+import util from 'jsonld/lib/util.js';
 
 /**
  * Creates a built-in node document loader.
@@ -87,10 +87,10 @@ export class JsonLDLoader {
       alternate = linkHeaders.alternate;
       if (
         alternate &&
-        alternate['type'] == 'application/ld+json' &&
+        alternate.type === 'application/ld+json' &&
         !(contentType || '').match(/^application\/(\w*\+)?json$/)
       ) {
-        location = urlUtil.prependBase(url, alternate['target']);
+        location = urlUtil.prependBase(url, alternate.target);
       }
     }
 
@@ -154,7 +154,7 @@ export function normalizeIPFSNodeURL(ipfsNodeURL: string, apiMethod: string): st
     ipfsNodeURL += apiSuffix;
   }
 
-  return ipfsNodeURL + '/' + apiMethod;
+  return `${ipfsNodeURL}/${apiMethod}`;
 }
 
 function trimRightSlash(url: string): string {
@@ -172,7 +172,7 @@ function trimLeftSlash(url: string): string {
 }
 
 function buildIpfsGatewayURL(ipfsGatewayURL: string, documentURL: string): string {
-  return trimRightSlash(ipfsGatewayURL) + '/ipfs/' + trimLeftSlash(documentURL);
+  return `${trimRightSlash(ipfsGatewayURL)}/ipfs/${trimLeftSlash(documentURL)}`;
 }
 
 async function loadIPFS(
@@ -202,7 +202,7 @@ async function loadFromIPFSNode(url: string, ipfsNodeURL: string): Promise<Remot
 
   const { res, body } = await _fetch({ url: catRequestURL, method: 'POST' });
 
-  if (res.status != 200) {
+  if (res.status !== 200) {
     throw new Error(`Error calling IPFS node: [${res.status}] ${res.statusText}\n${body}`);
   }
 
@@ -236,14 +236,14 @@ async function _fetch({ url, method }: { url: string | URL; method?: string }): 
 }> {
   const options: Record<string, unknown> = {};
   if (typeof method !== 'undefined') {
-    options['method'] = method;
+    options.method = method;
   }
   try {
     url = new URL(url);
     if (url.username && url.password) {
-      options['headers'] = {
-        ...(options['headers'] ?? {}),
-        authorization: `Basic ${btoa(url.username + ':' + url.password)}`
+      options.headers = {
+        ...(options.headers ?? {}),
+        authorization: `Basic ${btoa(`${url.username}:${url.password}`)}`
       };
       url = removeCredentialsFromURL(url);
     }

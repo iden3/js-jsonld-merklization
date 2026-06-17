@@ -1,12 +1,15 @@
-import { MerklizationConstants } from './constants';
-import { Hasher, Options, Parts, ParsedCtx } from './types/types';
 import jsonld from 'jsonld';
-import { DEFAULT_HASHER } from './poseidon';
-import { byteEncoder, sortArr } from './utils';
+import { MerklizationConstants } from './constants';
 import { getDocumentLoader, getHasher } from './options';
+import { DEFAULT_HASHER } from './poseidon';
+import type { Hasher, Options, ParsedCtx, Parts } from './types/types';
+import { byteEncoder, sortArr } from './utils';
 
 export class Path {
-  constructor(public parts: Parts = [], public hasher: Hasher = DEFAULT_HASHER) {}
+  constructor(
+    public parts: Parts = [],
+    public hasher: Hasher = DEFAULT_HASHER
+  ) {}
 
   reverse(): Parts {
     return this.parts.reverse();
@@ -54,7 +57,7 @@ export class Path {
     for (const i in parts) {
       const p = parts[i];
       if (MerklizationConstants.DIGITS_ONLY_REGEX.test(p)) {
-        this.parts.push(parseInt(p));
+        this.parts.push(parseInt(p, 10));
       } else {
         const m = parsedCtx.mappings.get(p);
         if (typeof m !== 'object') {
@@ -135,7 +138,7 @@ export class Path {
     const jsonldOpts = { documentLoader: getDocumentLoader(opts) };
 
     if (MerklizationConstants.DIGITS_ONLY_REGEX.test(term)) {
-      const num = parseInt(term);
+      const num = parseInt(term, 10);
       const moreParts = await Path.pathFromDocument(ldCTX, doc, newPathParts, true, opts);
 
       return [num, ...moreParts];
